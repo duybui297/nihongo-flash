@@ -3,8 +3,12 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import {defineConfig} from 'vite';
 
-export default defineConfig(() => {
-  const basePath = process.env.BASE_PATH ? `${process.env.BASE_PATH.replace(/\/+$/, '')}/` : '/';
+export default defineConfig(({ command }) => {
+  const basePath = process.env.BASE_PATH
+    ? `${process.env.BASE_PATH.replace(/\/+$/, '')}/`
+    : command === 'build'
+      ? '/products/nihongo-flash/'
+      : '/';
 
   return {
     base: basePath,
