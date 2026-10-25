@@ -125,8 +125,12 @@ export const FlashcardModal: React.FC<FlashcardModalProps> = ({
       try {
         const uploadResult = await api.uploadFile(file);
         setImageUrl(uploadResult.url);
-        if (!thumbnailUrl) {
+        if (!thumbnailUrl || thumbnailUrl.includes('mixkit')) {
           setThumbnailUrl(uploadResult.url);
+        }
+        if (videoUrl.includes('mixkit.co')) {
+          setVideoUrl('');
+          setCustomVideoUrl('');
         }
         return;
       } catch (serverErr) {
@@ -137,8 +141,12 @@ export const FlashcardModal: React.FC<FlashcardModalProps> = ({
       const rawDataUrl = await readFileAsDataUrl(file);
       const optimized = await optimizeImageDataUrl(rawDataUrl, 1000, 1000, 0.85);
       setImageUrl(optimized);
-      if (!thumbnailUrl) {
+      if (!thumbnailUrl || thumbnailUrl.includes('mixkit')) {
         setThumbnailUrl(optimized);
+      }
+      if (videoUrl.includes('mixkit.co')) {
+        setVideoUrl('');
+        setCustomVideoUrl('');
       }
     } catch (err) {
       console.error(err);

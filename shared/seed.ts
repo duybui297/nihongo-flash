@@ -44,7 +44,6 @@ export function createSeedData(now: string = new Date().toISOString()): AppData 
       category: 'Từ vựng',
       description: 'Chức vụ lãnh đạo quan trọng trong hệ thống cấp bậc công ty Nhật Bản (Japanese Corporate Hierarchy).\n\n• Cấu thành chữ Hán:\n- 部 (BỘ): Bộ phận, phòng ban, phân khu.\n- 長 (TRƯỞNG): Đứng đầu, trưởng bối, lớn tuổi, lãnh đạo.\n\n• Hệ thống cấp bậc công ty Nhật thường gặp:\n- 社長 (しゃちょう - Shachou): Giám đốc / Tổng giám đốc\n- 部長 (ぶちょう - Buchou): Trưởng phòng, Trưởng bộ phận\n- 課長 (かちょう - Kachou): Trưởng ban, Quản lý nhóm\n- 係長 (かかりちょう - Kakarichou): Tổ trưởng\n- 社員 (しゃいん - Shain): Nhân viên\n\n• Lưu ý văn hóa công sở: Khi nói chuyện trực tiếp với cấp trên, người Nhật gọi thẳng chức danh, ví dụ: "Tanaka-buchou" (田中部長) chứ không dùng "san".',
       imageUrl: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=800&q=80',
-      videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-business-people-meeting-in-a-boardroom-43403-large.mp4',
       thumbnailUrl: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=400&q=80',
       examples: [
         {
@@ -76,7 +75,6 @@ export function createSeedData(now: string = new Date().toISOString()): AppData 
       category: 'Từ vựng',
       description: 'Động từ nhóm 1 (Godan verb) biểu đạt sự mong mỏi, cầu chúc từ đáy lòng hoặc nhờ vả lịch sự.\n\n• Cấu thành chữ Hán:\n- 願 (NGUYỆN): Cầu nguyện, tâm nguyện, mong mỏi (chữ Nguyên 原 kết hợp bộ Hiệt 頁).\n\n• Các mẫu câu giao tiếp cửa miệng của người Nhật:\n- よろしくお願いします (Yoroshiku onegai shimasu): Rất mong được sự giúp đỡ của anh/chị.\n- ご健勝を心よりお祈り申し上げます (Lời chúc sức khỏe trang trọng trong thư từ).\n- 願い事 (ねがいごと - Negaigoto): Điều ước (khi viết thẻ gỗ Ema viếng đền thần Shinto vào năm mới).',
       imageUrl: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=800&q=80',
-      videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-japanese-wind-chime-in-the-wind-41982-large.mp4',
       thumbnailUrl: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=400&q=80',
       examples: [
         {
@@ -114,7 +112,6 @@ export function createSeedData(now: string = new Date().toISOString()): AppData 
       category: 'Từ vựng',
       description: 'Từ vựng chỉ mốc thời gian phổ biến trong văn bản, công việc, tin tức và truyền thông.\n\n• Cấu thành chữ Hán:\n- 現 (HIỆN): Xuất hiện, hiện hữu, trước mắt (bộ Ngọc 玉/王 và chữ Kiến 見).\n- 在 (TẠI): Tồn tại, ở tại, có mặt (bộ Thổ 土).\n\n• So sánh với "今" (Ima):\n- 今 (Ima): Dùng trong đàm thoại hàng ngày mang nghĩa "bây giờ" (thời điểm ngay lúc nói).\n- 現在 (Genzai): Trang trọng hơn, dùng trong văn viết, báo cáo, thông số thống kê ("hiện nay", "tính đến nay").\n\n• Cụm từ hay gặp:\n- 過去・現在・未来 (Kako - Genzai - Mirai): Quá khứ - Hiện tại - Tương lai\n- 現在の状況 (Genzai no joukyou): Tình hình hiện tại\n- 2026年現在 (Nisen nijuurokunen genzai): Tính đến thời điểm năm 2026',
       imageUrl: 'https://images.unsplash.com/photo-1508962914676-134849a727f0?auto=format&fit=crop&w=800&q=80',
-      videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-timelapse-of-tokyo-crossing-at-night-42416-large.mp4',
       thumbnailUrl: 'https://images.unsplash.com/photo-1508962914676-134849a727f0?auto=format&fit=crop&w=400&q=80',
       examples: [
         {
@@ -152,7 +149,6 @@ export function createSeedData(now: string = new Date().toISOString()): AppData 
       category: 'Từ vựng',
       description: 'Thuật ngữ trọng yếu trong lĩnh vực IT, công nghệ thông tin, kỹ thuật và sản xuất chế tạo.\n\n• Cấu thành chữ Hán:\n- 開 (KHAI): Mở ra, bắt đầu, khai mở (bộ Môn 門 mở rộng hai cánh cửa).\n- 発 (PHÁT): Bắn ra, xuất phát, phát minh, phát sinh.\n\n• Cụm từ chuyên môn IT & Doanh nghiệp:\n- アプリ開発 (Apuri kaihatsu): Phát triển ứng dụng di động/web\n- ソフトウェア開発 (Sofutowea kaihatsu): Phát triển phần mềm\n- 開発者 (かいはつしゃ - Kaihatsusha): Developer / Lập trình viên / Nhà phát triển\n- 研究開発 (Kenkyuu kaihatsu / R&D): Nghiên cứu và phát triển sản phẩm\n- 開発中 (Kaihatsuchuu): Đang trong giai đoạn phát triển',
       imageUrl: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80',
-      videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-hands-of-a-programmer-typing-on-a-laptop-41642-large.mp4',
       thumbnailUrl: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=400&q=80',
       examples: [
         {
@@ -190,7 +186,6 @@ export function createSeedData(now: string = new Date().toISOString()): AppData 
       category: 'Từ vựng',
       description: 'Tính từ đuôi い (I-adjective) diễn tả cảm xúc vui sướng, hân hoan khi đón nhận tin vui, quà tặng, lời khen hoặc ước muốn thành hiện thực.\n\n• Cấu thành chữ Hán:\n- 嬉 (HI): Vui sướng, hoan hỷ (bộ Nữ 女 kết hợp chữ Hỷ 喜 mang lại điềm lành hạnh phúc).\n\n• Biến đổi ngữ pháp tính từ đuôi い:\n- Khẳng định: 嬉しい (Vui)\n- Phủ định: 嬉しくない (Không vui)\n- Quá khứ: 嬉しかった (Đã rất vui)\n- Phủ định quá khứ: 嬉しくなかった (Đã không vui)\n\n• Phân biệt với "楽しい" (Tanoshii):\n- 楽しい (Tanoshii): Vui vẻ do hoạt động khách quan (như đi picnic vui, xem phim hài vui nhộn).\n- 嬉しい (Ureshii): Niềm vui xuất phát từ nội tâm chủ quan (khi đỗ kỳ thi, được ai đó quan tâm giúp đỡ).',
       imageUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80',
-      videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-young-woman-smiling-at-the-camera-in-a-park-42289-large.mp4',
       thumbnailUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80',
       examples: [
         {
@@ -228,7 +223,6 @@ export function createSeedData(now: string = new Date().toISOString()): AppData 
       category: 'Từ vựng',
       description: 'Từ vựng thiết yếu trong giao tiếp đời sống và công việc hàng ngày.\n\n• Chữ Hán cấu thành:\n- 会 (HỘI): Gặp gỡ, tụ họp, hội ngộ (bộ Nhân 人 kết hợp chữ Vân 云).\n- 社 (XÃ): Thần đất, đền thờ làng, đoàn thể, xã hội (bộ Thị 礻 và chữ Thổ 土).\n\n• Mẹo ghi nhớ & Điểm thú vị:\n- Ghép "Hội" + "Xã" = nơi mọi người tụ họp làm việc chung, tức là Công ty (会社).\n- Khi đảo ngược lại thành 社会 (しゃかい - Shakai) thì lại có nghĩa là Xã hội!\n\n• Các cụm từ thông dụng:\n- 会社員 (かいしゃいん - Kaishain): Nhân viên công ty\n- 会社に行く (かいしゃにいく - Kaisha ni iku): Đi làm / Đến công ty\n- 株式会社 (かぶしきがいしゃ - Kabushiki gaisha): Công ty cổ phần\n- 親会社 (おやがいしゃ - Oyagaisha): Công ty mẹ\n- 子会社 (こがいしゃ - Kogaisha): Công ty con',
       imageUrl: '/assets/kaisha-office.svg',
-      videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-modern-city-skyscrapers-and-traffic-time-lapse-40544-large.mp4',
       thumbnailUrl: '/assets/kaisha-office.svg',
       examples: [
         {
@@ -266,7 +260,6 @@ export function createSeedData(now: string = new Date().toISOString()): AppData 
       category: 'Từ vựng',
       description: 'Hoa anh đào tượng trưng cho sự thuần khiết, tươi mới và tinh thần võ sĩ đạo Nhật Bản. Cây nở rộ vào cuối tháng 3 đầu tháng 4, thời điểm mở màn năm học và tài khóa mới. Người Nhật thường tụ họp cùng bạn bè, gia đình dưới tán cây để thưởng rượu và ngắm hoa (Lễ hội Hanami - 花見).',
       imageUrl: 'https://images.unsplash.com/photo-1522383225653-ed111181a951?auto=format&fit=crop&w=800&q=80',
-      videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-blooming-cherry-blossom-branches-42023-large.mp4',
       thumbnailUrl: 'https://images.unsplash.com/photo-1522383225653-ed111181a951?auto=format&fit=crop&w=400&q=80',
       examples: [
         {
@@ -299,7 +292,6 @@ export function createSeedData(now: string = new Date().toISOString()): AppData 
       category: 'Từ vựng',
       description: 'Một trong những động từ quan trọng nhất trong tiếng Nhật. Thuộc động từ nhóm 2 (Ichidan verb):\n- Thể lịch sự: 食べます (Tabemasu - Ăn)\n- Thể phủ định: 食べない (Tabenai - Không ăn)\n- Thể nối tiếp: 食べて (Tabete - Hãy ăn / Đang ăn)\n- Thể quá khứ: 食べた (Tabeta - Đã ăn)\nChữ Hán Thực (食) gồm bộ Nhân (人) và chữ Lương (良), thể hiện thức ăn lành mạnh nuôi dưỡng thân tâm.',
       imageUrl: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=800&q=80',
-      videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-ramen-soup-bowl-with-chopsticks-43093-large.mp4',
       thumbnailUrl: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=400&q=80',
       examples: [
         {

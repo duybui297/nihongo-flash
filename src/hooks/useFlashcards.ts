@@ -122,6 +122,7 @@ export function useFlashcards() {
         ...card,
         imageUrl,
         thumbnailUrl: imageUrl,
+        videoUrl: undefined,
         updatedAt: new Date().toISOString(),
       };
       await handleSaveCard(updated);

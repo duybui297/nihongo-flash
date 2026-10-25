@@ -9,12 +9,32 @@ export const INITIAL_CARDS: Flashcard[] = defaultSeed.cards;
 const STORAGE_KEY_CARDS = 'nihongo_flashcards_v2';
 const STORAGE_KEY_DECKS = 'nihongo_decks_v2';
 
+function cleanLegacySeedVideos(cards: Flashcard[]): Flashcard[] {
+  let changed = false;
+  const cleaned = cards.map((c) => {
+    // If the card has a dummy seed mixkit video, clean it out so default is image
+    if (c.videoUrl && c.videoUrl.includes('mixkit.co')) {
+      changed = true;
+      const { videoUrl: _, ...rest } = c;
+      return { ...rest, videoUrl: undefined };
+    }
+    return c;
+  });
+  if (changed) {
+    setLocalCards(cleaned);
+  }
+  return cleaned;
+}
+
 function getLocalCards(): Flashcard[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_CARDS);
     if (!raw) return INITIAL_CARDS;
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : INITIAL_CARDS;
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      return cleanLegacySeedVideos(parsed);
+    }
+    return INITIAL_CARDS;
   } catch {
     return INITIAL_CARDS;
   }
