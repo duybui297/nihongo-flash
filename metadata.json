@@ -1,0 +1,8 @@
+{
+  "name": "NihonFlash - Flashcard Học Tiếng Nhật Đa Phương Tiện",
+  "description": "Ứng dụng flashcard học tiếng Nhật tương tác cao với hỗ trợ tải hình ảnh, video minh hoạ, khung mô tả chi tiết, phát âm giọng chuẩn và lưu trữ dữ liệu bền vững.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

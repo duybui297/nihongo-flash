@@ -1,0 +1,151 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="800" height="450">
+  <defs>
+    <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="60%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <linearGradient id="bldgGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.9" />
+      <stop offset="100%" stop-color="#1d4ed8" stop-opacity="0.95" />
+    </linearGradient>
+    <linearGradient id="bldgGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7" stop-opacity="0.85" />
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0.95" />
+    </linearGradient>
+    <linearGradient id="bldgGrad3" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#64748b" />
+      <stop offset="100%" stop-color="#1e293b" />
+    </linearGradient>
+    <linearGradient id="glowGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f43f5e" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Sky Background -->
+  <rect width="800" height="450" fill="url(#skyGrad)" />
+  <circle cx="680" cy="90" r="140" fill="url(#glowGrad)" />
+
+  <!-- Stars / Distant Lights -->
+  <circle cx="120" cy="60" r="1.5" fill="#ffffff" opacity="0.6" />
+  <circle cx="280" cy="40" r="1.5" fill="#ffffff" opacity="0.8" />
+  <circle cx="450" cy="80" r="2" fill="#ffffff" opacity="0.5" />
+  <circle cx="580" cy="50" r="1" fill="#ffffff" opacity="0.7" />
+
+  <!-- Distant Skyline Silhouettes -->
+  <polygon points="40,450 40,240 110,240 110,450" fill="#1e293b" opacity="0.5" />
+  <polygon points="120,450 120,200 180,180 240,200 240,450" fill="#1e293b" opacity="0.6" />
+  <polygon points="260,450 260,260 320,260 320,450" fill="#1e293b" opacity="0.4" />
+  <polygon points="560,450 560,190 620,190 620,450" fill="#1e293b" opacity="0.6" />
+  <polygon points="640,450 640,230 720,230 720,450" fill="#1e293b" opacity="0.5" />
+
+  <!-- Modern Office Tower Left -->
+  <polygon points="140,450 140,140 250,110 250,450" fill="url(#bldgGrad3)" />
+  <!-- Windows Left -->
+  <g fill="#93c5fd" opacity="0.75">
+    <rect x="155" y="140" width="16" height="8" rx="1" />
+    <rect x="180" y="140" width="16" height="8" rx="1" />
+    <rect x="205" y="140" width="16" height="8" rx="1" />
+    <rect x="155" y="165" width="16" height="8" rx="1" />
+    <rect x="180" y="165" width="16" height="8" rx="1" fill="#fef08a" />
+    <rect x="205" y="165" width="16" height="8" rx="1" />
+    <rect x="155" y="190" width="16" height="8" rx="1" />
+    <rect x="180" y="190" width="16" height="8" rx="1" />
+    <rect x="205" y="190" width="16" height="8" rx="1" fill="#fef08a" />
+    <rect x="155" y="215" width="16" height="8" rx="1" />
+    <rect x="180" y="215" width="16" height="8" rx="1" />
+    <rect x="205" y="215" width="16" height="8" rx="1" />
+    <rect x="155" y="240" width="16" height="8" rx="1" fill="#fef08a" />
+    <rect x="180" y="240" width="16" height="8" rx="1" />
+    <rect x="205" y="240" width="16" height="8" rx="1" />
+    <rect x="155" y="265" width="16" height="8" rx="1" />
+    <rect x="180" y="265" width="16" height="8" rx="1" />
+    <rect x="205" y="265" width="16" height="8" rx="1" />
+  </g>
+
+  <!-- Central Corporate Headquarters (Kaisha Tower) -->
+  <polygon points="310,450 310,80 490,80 490,450" fill="url(#bldgGrad1)" />
+  <!-- Rooftop Antenna & Heliport -->
+  <line x1="400" y1="80" x2="400" y2="30" stroke="#f43f5e" stroke-width="3" />
+  <circle cx="400" cy="28" r="4" fill="#f43f5e" filter="url(#glow)" />
+
+  <!-- Center Tower Grid Windows (Glowing Offices) -->
+  <g fill="#e0f2fe" opacity="0.85">
+    <!-- Row 1 -->
+    <rect x="330" y="105" width="22" height="12" rx="2" fill="#fef08a" />
+    <rect x="360" y="105" width="22" height="12" rx="2" />
+    <rect x="390" y="105" width="22" height="12" rx="2" fill="#fef08a" />
+    <rect x="420" y="105" width="22" height="12" rx="2" />
+    <rect x="450" y="105" width="22" height="12" rx="2" />
+    <!-- Row 2 -->
+    <rect x="330" y="130" width="22" height="12" rx="2" />
+    <rect x="360" y="130" width="22" height="12" rx="2" fill="#fef08a" />
+    <rect x="390" y="130" width="22" height="12" rx="2" />
+    <rect x="420" y="130" width="22" height="12" rx="2" fill="#fef08a" />
+    <rect x="450" y="130" width="22" height="12" rx="2" />
+    <!-- Row 3 -->
+    <rect x="330" y="155" width="22" height="12" rx="2" fill="#fef08a" />
+    <rect x="360" y="155" width="22" height="12" rx="2" />
+    <rect x="390" y="155" width="22" height="12" rx="2" />
+    <rect x="420" y="155" width="22" height="12" rx="2" />
+    <rect x="450" y="155" width="22" height="12" rx="2" fill="#fef08a" />
+    <!-- Row 4 -->
+    <rect x="330" y="180" width="22" height="12" rx="2" />
+    <rect x="360" y="180" width="22" height="12" rx="2" />
+    <rect x="390" y="180" width="22" height="12" rx="2" fill="#fef08a" />
+    <rect x="420" y="180" width="22" height="12" rx="2" />
+    <rect x="450" y="180" width="22" height="12" rx="2" />
+    <!-- Row 5 -->
+    <rect x="330" y="205" width="22" height="12" rx="2" fill="#fef08a" />
+    <rect x="360" y="205" width="22" height="12" rx="2" fill="#fef08a" />
+    <rect x="390" y="205" width="22" height="12" rx="2" />
+    <rect x="420" y="205" width="22" height="12" rx="2" />
+    <rect x="450" y="205" width="22" height="12" rx="2" fill="#fef08a" />
+    <!-- Row 6 -->
+    <rect x="330" y="230" width="22" height="12" rx="2" />
+    <rect x="360" y="230" width="22" height="12" rx="2" />
+    <rect x="390" y="230" width="22" height="12" rx="2" />
+    <rect x="420" y="230" width="22" height="12" rx="2" fill="#fef08a" />
+    <rect x="450" y="230" width="22" height="12" rx="2" />
+    <!-- Row 7 -->
+    <rect x="330" y="255" width="22" height="12" rx="2" fill="#fef08a" />
+    <rect x="360" y="255" width="22" height="12" rx="2" />
+    <rect x="390" y="255" width="22" height="12" rx="2" fill="#fef08a" />
+    <rect x="420" y="255" width="22" height="12" rx="2" />
+    <rect x="450" y="255" width="22" height="12" rx="2" />
+  </g>
+
+  <!-- Modern Office Tower Right -->
+  <polygon points="510,450 510,130 630,160 630,450" fill="url(#bldgGrad2)" />
+  <g fill="#bae6fd" opacity="0.7">
+    <rect x="525" y="165" width="18" height="10" rx="1" />
+    <rect x="555" y="165" width="18" height="10" rx="1" fill="#fef08a" />
+    <rect x="585" y="165" width="18" height="10" rx="1" />
+    <rect x="525" y="195" width="18" height="10" rx="1" />
+    <rect x="555" y="195" width="18" height="10" rx="1" />
+    <rect x="585" y="195" width="18" height="10" rx="1" fill="#fef08a" />
+    <rect x="525" y="225" width="18" height="10" rx="1" fill="#fef08a" />
+    <rect x="555" y="225" width="18" height="10" rx="1" />
+    <rect x="585" y="225" width="18" height="10" rx="1" />
+    <rect x="525" y="255" width="18" height="10" rx="1" />
+    <rect x="555" y="255" width="18" height="10" rx="1" />
+    <rect x="585" y="255" width="18" height="10" rx="1" />
+  </g>
+
+  <!-- Foreground Street & Traffic Light Trails -->
+  <rect x="0" y="400" width="800" height="50" fill="#090d16" />
+  <line x1="0" y1="418" x2="800" y2="418" stroke="#ef4444" stroke-width="3" opacity="0.8" />
+  <line x1="0" y1="428" x2="800" y2="428" stroke="#f59e0b" stroke-width="2.5" opacity="0.9" />
+  <line x1="0" y1="438" x2="800" y2="438" stroke="#38bdf8" stroke-width="2" opacity="0.7" />
+
+  <!-- Japanese Kanji Badge Overlay -->
+  <rect x="30" y="320" width="220" height="64" rx="12" fill="#0f172a" fill-opacity="0.85" stroke="#334155" stroke-width="1.5" />
+  <text x="46" y="362" font-family="'Noto Sans JP', 'Hiragino Sans', sans-serif" font-size="34" font-weight="900" fill="#ffffff" letter-spacing="2">会社</text>
+  <text x="142" y="348" font-family="sans-serif" font-size="12" font-weight="700" fill="#f43f5e">KAISHA</text>
+  <text x="142" y="368" font-family="sans-serif" font-size="13" font-weight="500" fill="#94a3b8">Công ty</text>
+</svg>

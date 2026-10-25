@@ -1,0 +1,759 @@
+import { Flashcard, Deck } from '../types/flashcard';
+import { api } from './api';
+
+const DB_NAME = 'NihonFlashDB';
+const DB_VERSION = 1;
+const STORE_CARDS = 'flashcards';
+const STORE_DECKS = 'decks';
+
+// Initial Starter Decks
+export const INITIAL_DECKS: Deck[] = [
+  {
+    id: 'deck-n5-basic',
+    name: 'Từ vựng N5 - Giao tiếp hàng ngày',
+    description: 'Bộ thẻ từ vựng thiết yếu cho người mới bắt đầu học tiếng Nhật',
+    color: '#ef4444',
+    icon: '🌸',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'deck-kanji-starter',
+    name: 'Kanji Hình tượng & Bộ thủ',
+    description: 'Chữ Hán trực quan kèm ảnh minh họa và mẹo ghi nhớ sâu',
+    color: '#0284c7',
+    icon: '🗻',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'deck-culture-phrases',
+    name: 'Cụm từ & Văn hóa Nhật Bản',
+    description: 'Những câu giao tiếp chứa đựng chiều sâu văn hóa xứ sở hoa anh đào',
+    color: '#10b981',
+    icon: '🍵',
+    createdAt: new Date().toISOString(),
+  },
+];
+
+export const INITIAL_CARDS: Flashcard[] = [
+  {
+    id: 'card-buchou',
+    deckId: 'deck-n5-basic',
+    title: '部長 (Buchou) - Trưởng bộ phận, Trưởng phòng',
+    japanese: '部長',
+    reading: 'ぶちょう (Buchou)',
+    meaning: 'Trưởng phòng, Trưởng bộ phận',
+    jlpt: 'N4',
+    category: 'Từ vựng',
+    description: 'Chức vụ lãnh đạo quan trọng trong hệ thống cấp bậc công ty Nhật Bản (Japanese Corporate Hierarchy).\n\n• Cấu thành chữ Hán:\n- 部 (BỘ): Bộ phận, phòng ban, phân khu.\n- 長 (TRƯỞNG): Đứng đầu, trưởng bối, lớn tuổi, lãnh đạo.\n\n• Hệ thống cấp bậc công ty Nhật thường gặp:\n- 社長 (しゃちょう - Shachou): Giám đốc / Tổng giám đốc\n- 部長 (ぶちょう - Buchou): Trưởng phòng, Trưởng bộ phận\n- 課長 (かちょう - Kachou): Trưởng ban, Quản lý nhóm\n- 係長 (かかりちょう - Kakarichou): Tổ trưởng\n- 社員 (しゃいん - Shain): Nhân viên\n\n• Lưu ý văn hóa công sở: Khi nói chuyện trực tiếp với cấp trên, người Nhật gọi thẳng chức danh, ví dụ: "Tanaka-buchou" (田中部長) chứ không dùng "san".',
+    imageUrl: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=800&q=80',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-business-people-meeting-in-a-boardroom-43403-large.mp4',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=400&q=80',
+    examples: [
+      {
+        id: 'ex-buchou-1',
+        japanese: '新しい企画書を部長に提出しました。',
+        reading: 'Atarashii kikakusho o buchou ni teishutsu shimashita.',
+        vietnamese: 'Tôi đã nộp bản đề xuất kế hoạch mới lên cho trưởng phòng.'
+      },
+      {
+        id: 'ex-buchou-2',
+        japanese: '田中部長はとても優しくて頼りになる上司です。',
+        reading: 'Tanaka-buchou wa totemo yasashikute tayori ni naru joushi desu.',
+        vietnamese: 'Trưởng phòng Tanaka là một cấp trên rất tốt bụng và đáng tin cậy.'
+      }
+    ],
+    status: 'new',
+    reviewCount: 0,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'card-negau',
+    deckId: 'deck-n5-basic',
+    title: '願う (Negau) - Cầu xin, mong muốn, nhờ vả',
+    japanese: '願う',
+    reading: 'ねがう (Negau)',
+    meaning: 'Cầu xin, mong muốn, cầu chúc, nhờ vả',
+    jlpt: 'N4',
+    category: 'Từ vựng',
+    description: 'Động từ nhóm 1 (Godan verb) biểu đạt sự mong mỏi, cầu chúc từ đáy lòng hoặc nhờ vả lịch sự.\n\n• Cấu thành chữ Hán:\n- 願 (NGUYỆN): Cầu nguyện, tâm nguyện, mong mỏi (chữ Nguyên 原 kết hợp bộ Hiệt 頁).\n\n• Các mẫu câu giao tiếp cửa miệng của người Nhật:\n- よろしくお願いします (Yoroshiku onegai shimasu): Rất mong được sự giúp đỡ của anh/chị.\n- ご健勝を心よりお祈り申し上げ ます (Lời chúc sức khỏe trang trọng trong thư từ).\n- 願い事 (ねがいごと - Negaigoto): Điều ước (khi viết thẻ gỗ Ema viếng đền thần Shinto vào năm mới).',
+    imageUrl: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=800&q=80',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-japanese-wind-chime-in-the-wind-41982-large.mp4',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=400&q=80',
+    examples: [
+      {
+        id: 'ex-negau-1',
+        japanese: '世界平和を心から願っています。',
+        reading: 'Sekai heiwa o kokoro kara negatte imasu.',
+        vietnamese: 'Tôi chân thành cầu mong cho hòa bình của thế giới.'
+      },
+      {
+        id: 'ex-negau-2',
+        japanese: '明日晴れることを願っています。',
+        reading: 'Ashita hareru koto o negatte imasu.',
+        vietnamese: 'Tôi mong ngày mai thời tiết sẽ nắng đẹp.'
+      },
+      {
+        id: 'ex-negau-3',
+        japanese: 'どうぞよろしくお願いします。',
+        reading: 'Douzo yoroshiku onegai shimasu.',
+        vietnamese: 'Trăm sự xin nhờ anh chị giúp đỡ.'
+      }
+    ],
+    status: 'new',
+    reviewCount: 0,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'card-genzai',
+    deckId: 'deck-n5-basic',
+    title: '現在 (Genzai) - Hiện tại, hiện nay, bây giờ',
+    japanese: '現在',
+    reading: 'げんざい (Genzai)',
+    meaning: 'Hiện tại, hiện nay, thời điểm này',
+    jlpt: 'N3',
+    category: 'Từ vựng',
+    description: 'Từ vựng chỉ mốc thời gian phổ biến trong văn bản, công việc, tin tức và truyền thông.\n\n• Cấu thành chữ Hán:\n- 現 (HIỆN): Xuất hiện, hiện hữu, trước mắt (bộ Ngọc 玉/王 và chữ Kiến 見).\n- 在 (TẠI): Tồn tại, ở tại, có mặt (bộ Thổ 土).\n\n• So sánh với "今" (Ima):\n- 今 (Ima): Dùng trong đàm thoại hàng ngày mang nghĩa "bây giờ" (thời điểm ngay lúc nói).\n- 現在 (Genzai): Trang trọng hơn, dùng trong văn viết, báo cáo, thông số thống kê ("hiện nay", "tính đến nay").\n\n• Cụm từ hay gặp:\n- 過去・現在・未来 (Kako - Genzai - Mirai): Quá khứ - Hiện tại - Tương lai\n- 現在の状況 (Genzai no joukyou): Tình hình hiện tại\n- 2026年現在 (Nisen nijuurokunen genzai): Tính đến thời điểm năm 2026',
+    imageUrl: 'https://images.unsplash.com/photo-1508962914676-134849a727f0?auto=format&fit=crop&w=800&q=80',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-timelapse-of-tokyo-crossing-at-night-42416-large.mp4',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1508962914676-134849a727f0?auto=format&fit=crop&w=400&q=80',
+    examples: [
+      {
+        id: 'ex-genzai-1',
+        japanese: '現在の時刻は午前10時です。',
+        reading: 'Genzai no jikoku wa gozen juuji desu.',
+        vietnamese: 'Giờ hiện tại đang là 10 giờ sáng.'
+      },
+      {
+        id: 'ex-genzai-2',
+        japanese: '彼は現在、東京の大学で日本語を勉強しています。',
+        reading: 'Kare wa genzai, Toukyou no daigaku de Nihongo o benkyou shite imasu.',
+        vietnamese: 'Hiện tại anh ấy đang học tiếng Nhật tại một trường đại học ở Tokyo.'
+      },
+      {
+        id: 'ex-genzai-3',
+        japanese: '過去にとらわれず、現在を大切に生きよう。',
+        reading: 'Kako ni torawarezu, genzai o taisetsu ni ikiyou.',
+        vietnamese: 'Đừng vướng bận quá khứ, hãy trân trọng và sống trọn vẹn ở hiện tại.'
+      }
+    ],
+    status: 'new',
+    reviewCount: 0,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'card-kaihatsu',
+    deckId: 'deck-n5-basic',
+    title: '開発 (Kaihatsu) - Phát triển (sản phẩm, phần mềm, công nghệ)',
+    japanese: '開発',
+    reading: 'かいはつ (Kaihatsu)',
+    meaning: 'Phát triển (nghiên cứu, chế tạo sản phẩm, lập trình phần mềm)',
+    jlpt: 'N3',
+    category: 'Từ vựng',
+    description: 'Thuật ngữ trọng yếu trong lĩnh vực IT, công nghệ thông tin, kỹ thuật và sản xuất chế tạo.\n\n• Cấu thành chữ Hán:\n- 開 (KHAI): Mở ra, bắt đầu, khai mở (bộ Môn 門 mở rộng hai cánh cửa).\n- 発 (PHÁT): Bắn ra, xuất phát, phát minh, phát sinh.\n\n• Cụm từ chuyên môn IT & Doanh nghiệp:\n- アプリ開発 (Apuri kaihatsu): Phát triển ứng dụng di động/web\n- ソフトウェア開発 (Sofutowea kaihatsu): Phát triển phần mềm\n- 開発者 (かいはつしゃ - Kaihatsusha): Developer / Lập trình viên / Nhà phát triển\n- 研究開発 (Kenkyuu kaihatsu / R&D): Nghiên cứu và phát triển sản phẩm\n- 開発中 (Kaihatsuchuu): Đang trong giai đoạn phát triển',
+    imageUrl: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-hands-of-a-programmer-typing-on-a-laptop-41642-large.mp4',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=400&q=80',
+    examples: [
+      {
+        id: 'ex-kaihatsu-1',
+        japanese: '新しいスマートフォンのアプリを開発しています。',
+        reading: 'Atarashii sumaatofon no apuri o kaihatsu shite imasu.',
+        vietnamese: 'Chúng tôi đang phát triển một ứng dụng mới cho điện thoại thông minh.'
+      },
+      {
+        id: 'ex-kaihatsu-2',
+        japanese: 'AI技術の開発が急速に進んでいます。',
+        reading: 'Ei-ai gijutsu no kaihatsu ga kyuusoku ni susunde imasu.',
+        vietnamese: 'Sự phát triển của công nghệ trí tuệ nhân tạo (AI) đang tiến bộ nhanh chóng.'
+      },
+      {
+        id: 'ex-kaihatsu-3',
+        japanese: '当社は環境に優しい新エネルギーの開発に注力しています。',
+        reading: 'Tousha wa kankyou ni yasashii shin-enerugii no kaihatsu ni chuuryoku shite imasu.',
+        vietnamese: 'Công ty chúng tôi đang tập trung phát triển nguồn năng lượng mới thân thiện với môi trường.'
+      }
+    ],
+    status: 'new',
+    reviewCount: 0,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'card-ureshii',
+    deckId: 'deck-n5-basic',
+    title: '嬉しい (Ureshii) - Vui mừng, sung sướng, hạnh phúc',
+    japanese: '嬉しい',
+    reading: 'うれしい (Ureshii)',
+    meaning: 'Vui mừng, sung sướng, hạnh phúc',
+    jlpt: 'N5',
+    category: 'Từ vựng',
+    description: 'Tính từ đuôi い (I-adjective) diễn tả cảm xúc vui sướng, hân hoan khi đón nhận tin vui, quà tặng, lời khen hoặc ước muốn thành hiện thực.\n\n• Cấu thành chữ Hán:\n- 嬉 (HI): Vui sướng, hoan hỷ (bộ Nữ 女 kết hợp chữ Hỷ 喜 mang lại điềm lành hạnh phúc).\n\n• Biến đổi ngữ pháp tính từ đuôi い:\n- Khẳng định: 嬉しい (Vui)\n- Phủ định: 嬉しくない (Không vui)\n- Quá khứ: 嬉しかった (Đã rất vui)\n- Phủ định quá khứ: 嬉しくなかった (Đã không vui)\n\n• Phân biệt với "楽しい" (Tanoshii):\n- 楽しい (Tanoshii): Vui vẻ do hoạt động khách quan (như đi picnic vui, xem phim hài vui nhộn).\n- 嬉しい (Ureshii): Niềm vui xuất phát từ nội tâm chủ quan (khi đỗ kỳ thi, được ai đó quan tâm giúp đỡ).',
+    imageUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-young-woman-smiling-at-the-camera-in-a-park-42289-large.mp4',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80',
+    examples: [
+      {
+        id: 'ex-ureshii-1',
+        japanese: 'JLPT試験に合格できて、本当に嬉しいです！',
+        reading: 'JLPT shiken ni goukaku dekite, hontou ni ureshii desu!',
+        vietnamese: 'Đỗ được kỳ thi JLPT khiến tôi thật sự vô cùng sung sướng!'
+      },
+      {
+        id: 'ex-ureshii-2',
+        japanese: 'お祝いのメッセージをいただいて、とても嬉しかったです。',
+        reading: 'Oiwai no messeeji o itadaite, totemo ureshikatta desu.',
+        vietnamese: 'Nhận được tin nhắn chúc mừng từ bạn, tôi cảm thấy rất đỗi vui mừng.'
+      },
+      {
+        id: 'ex-ureshii-3',
+        japanese: 'そう言ってもらえると嬉しいです。',
+        reading: 'Sou itte moraeru to ureshii desu.',
+        vietnamese: 'Được bạn khen và động viên như vậy tôi vui lắm.'
+      }
+    ],
+    status: 'new',
+    reviewCount: 0,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'card-kaisha',
+    deckId: 'deck-n5-basic',
+    title: '会社 (Kaisha) - Công ty',
+    japanese: '会社',
+    reading: 'かいしゃ (Kaisha)',
+    meaning: 'Công ty, doanh nghiệp',
+    jlpt: 'N5',
+    category: 'Từ vựng',
+    description: 'Từ vựng thiết yếu trong giao tiếp đời sống và công việc hàng ngày.\n\n• Chữ Hán cấu thành:\n- 会 (HỘI): Gặp gỡ, tụ họp, hội ngộ (bộ Nhân 人 kết hợp chữ Vân 云).\n- 社 (XÃ): Thần đất, đền thờ làng, đoàn thể, xã hội (bộ Thị 礻 và chữ Thổ 土).\n\n• Mẹo ghi nhớ & Điểm thú vị:\n- Ghép "Hội" + "Xã" = nơi mọi người tụ họp làm việc chung, tức là Công ty (会社).\n- Khi đảo ngược lại thành 社会 (しゃかい - Shakai) thì lại có nghĩa là Xã hội!\n\n• Các cụm từ thông dụng:\n- 会社員 (かいしゃいん - Kaishain): Nhân viên công ty\n- 会社に行く (かいしゃにいく - Kaisha ni iku): Đi làm / Đến công ty\n- 株式会社 (かぶしきがいしゃ - Kabushiki gaisha): Công ty cổ phần\n- 親会社 (おやがいしゃ - Oyagaisha): Công ty mẹ\n- 子会社 (こがいしゃ - Kogaisha): Công ty con',
+    imageUrl: '/assets/kaisha-office.svg',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-modern-city-skyscrapers-and-traffic-time-lapse-40544-large.mp4',
+    thumbnailUrl: '/assets/kaisha-office.svg',
+    examples: [
+      {
+        id: 'ex-kaisha-1',
+        japanese: '毎朝８時半に会社へ行きます。',
+        reading: 'Maiasa hachijihan ni kaisha e ikimasu.',
+        vietnamese: 'Mỗi buổi sáng tôi đến công ty lúc 8 giờ rưỡi.'
+      },
+      {
+        id: 'ex-kaisha-2',
+        japanese: '父は日本のIT会社で働いています。',
+        reading: 'Chichi wa Nihon no aiti- kaisha de hataraite imasu.',
+        vietnamese: 'Bố tôi đang làm việc ở một công ty công nghệ thông tin của Nhật.'
+      },
+      {
+        id: 'ex-kaisha-3',
+        japanese: '将来、自分の会社を作りたいです。',
+        reading: 'Shourai, jibun no kaisha o tsukuritai desu.',
+        vietnamese: 'Trong tương lai, tôi muốn tự thành lập công ty của riêng mình.'
+      }
+    ],
+    status: 'new',
+    reviewCount: 0,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'card-sakura',
+    deckId: 'deck-n5-basic',
+    title: '桜 (Sakura) - Hoa anh đào',
+    japanese: '桜',
+    reading: 'さくら (Sakura)',
+    meaning: 'Hoa anh đào - Quốc hoa biểu tượng mùa xuân',
+    jlpt: 'N5',
+    category: 'Từ vựng',
+    description: 'Hoa anh đào tượng trưng cho sự thuần khiết, tươi mới và tinh thần võ sĩ đạo Nhật Bản. Cây nở rộ vào cuối tháng 3 đầu tháng 4, thời điểm mở màn năm học và tài khóa mới. Người Nhật thường tụ họp cùng bạn bè, gia đình dưới tán cây để thưởng rượu và ngắm hoa (Lễ hội Hanami - 花見).',
+    imageUrl: 'https://images.unsplash.com/photo-1522383225653-ed111181a951?auto=format&fit=crop&w=800&q=80',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-blooming-cherry-blossom-branches-42023-large.mp4',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1522383225653-ed111181a951?auto=format&fit=crop&w=400&q=80',
+    examples: [
+      {
+        id: 'ex-1',
+        japanese: '春になると、桜が綺麗に咲きます。',
+        reading: 'Haru ni naru to, sakura ga kirei ni sakimasu.',
+        vietnamese: 'Khi mùa xuân đến, hoa anh đào nở rất đẹp.'
+      },
+      {
+        id: 'ex-2',
+        japanese: '週末に友だちと花見に行きましょう。',
+        reading: 'Shuumatsu ni tomodachi to hanami ni ikimashou.',
+        vietnamese: 'Cuối tuần này hãy cùng bạn bè đi ngắm hoa anh đào nhé.'
+      }
+    ],
+    status: 'mastered',
+    reviewCount: 5,
+    lastReviewedAt: new Date().toISOString(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'card-taberu',
+    deckId: 'deck-n5-basic',
+    title: '食べる (Taberu) - Ăn uống',
+    japanese: '食べる',
+    reading: 'たべる (Taberu)',
+    meaning: 'Ăn (Động từ nhóm 2)',
+    jlpt: 'N5',
+    category: 'Từ vựng',
+    description: 'Một trong những động từ quan trọng nhất trong tiếng Nhật. Thuộc động từ nhóm 2 (Ichidan verb):\n- Thể lịch sự: 食べます (Tabemasu - Ăn)\n- Thể phủ định: 食べない (Tabenai - Không ăn)\n- Thể nối tiếp: 食べて (Tabete - Hãy ăn / Đang ăn)\n- Thể quá khứ: 食べた (Tabeta - Đã ăn)\nChữ Hán Thực (食) gồm bộ Nhân (人) và chữ Lương (良), thể hiện thức ăn lành mạnh nuôi dưỡng thân tâm.',
+    imageUrl: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=800&q=80',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-ramen-soup-bowl-with-chopsticks-43093-large.mp4',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=400&q=80',
+    examples: [
+      {
+        id: 'ex-taberu-1',
+        japanese: '朝ごはんは何を食べましたか。',
+        reading: 'Asagohan wa nani o tabemashita ka.',
+        vietnamese: 'Sáng nay bạn đã ăn gì thế?'
+      },
+      {
+        id: 'ex-taberu-2',
+        japanese: '日本料理をたくさん食べたいです。',
+        reading: 'Nihon ryouri o takusan tabetai desu.',
+        vietnamese: 'Tôi muốn thưởng thức thật nhiều món ăn Nhật Bản.'
+      }
+    ],
+    status: 'learning',
+    reviewCount: 2,
+    lastReviewedAt: new Date().toISOString(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'card-fujisan',
+    deckId: 'deck-kanji-starter',
+    title: '富士山 (Fujisan) - Núi Phú Sĩ',
+    japanese: '富士山',
+    reading: 'ふじさん (Fujisan)',
+    meaning: 'Núi Phú Sĩ (Ngọn núi thiêng cao 3.776m)',
+    jlpt: 'N5',
+    category: 'Kanji',
+    description: 'Núi Phú Sĩ là biểu tượng thiêng liêng và di sản văn hóa thế giới UNESCO của Nhật Bản. Chữ Hán cấu thành:\n- 富 (Phú): giàu sang, sung túc\n- 士 (Sĩ): chiến sĩ, bậc trí dũng\n- 山 (Sơn): ngọn núi cao\n*Lưu ý ngữ âm*: Trong tiếng Nhật gọi là "Fujisan", chữ 山 ở đây đọc theo âm On là "San", không gọi là "Fujiyama".',
+    imageUrl: 'https://images.unsplash.com/photo-1490806843957-31f4c9a91c65?auto=format&fit=crop&w=800&q=80',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1490806843957-31f4c9a91c65?auto=format&fit=crop&w=400&q=80',
+    examples: [
+      {
+        id: 'ex-fuji-1',
+        japanese: '新幹線の窓から富士山が見えました。',
+        reading: 'Shinkansen no mado kara Fujisan ga miemashita.',
+        vietnamese: 'Từ cửa sổ tàu Shinkansen, tôi đã ngắm nhìn được núi Phú Sĩ.'
+      }
+    ],
+    status: 'learning',
+    reviewCount: 3,
+    lastReviewedAt: new Date().toISOString(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'card-ichigo-ichie',
+    deckId: 'deck-culture-phrases',
+    title: '一期一会 (Ichigo Ichie) - Nhất kỳ nhất hội',
+    japanese: '一期一会',
+    reading: 'いちごいちえ (Ichigo Ichie)',
+    meaning: 'Trân quý từng cuộc gặp gỡ trong đời',
+    jlpt: 'N3',
+    category: 'Thành ngữ',
+    description: 'Triết lý sâu sắc bắt nguồn từ Trà đạo (Chado) của thiền sư Sen no Rikyu. "Nhất kỳ" nghĩa là một đời người, "Nhất hội" nghĩa là một lần gặp gỡ. Dù là người quen hay người lạ, khoảnh khắc này sẽ không bao giờ diễn ra thêm lần nào nữa trong vũ trụ, vì vậy hãy đối đãi nhau trọn vẹn và chân tình.',
+    imageUrl: 'https://images.unsplash.com/photo-1545048702-793607ce028b?auto=format&fit=crop&w=800&q=80',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1545048702-793607ce028b?auto=format&fit=crop&w=400&q=80',
+    examples: [
+      {
+        id: 'ex-ichigo-1',
+        japanese: '旅の出会いは一期一会だから、大切にしたい。',
+        reading: 'Tabi no deai wa ichigo ichie dakara, taisetsu ni shitai.',
+        vietnamese: 'Gặp gỡ trên chuyến hành trình là nhất kỳ nhất hội, nên tôi muốn nâng niu trân trọng.'
+      }
+    ],
+    status: 'learning',
+    reviewCount: 1,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'card-itadakimasu',
+    deckId: 'deck-culture-phrases',
+    title: 'いただきます (Itadakimasu) - Lời chào trước bữa ăn',
+    japanese: 'いただきます',
+    reading: 'いただきます (Itadakimasu)',
+    meaning: 'Xin phép được dùng bữa (Tạ ơn thức ăn)',
+    jlpt: 'N5',
+    category: 'Giao tiếp',
+    description: 'Cử chỉ nét đẹp văn hóa Nhật Bản. Trước khi ăn, người Nhật chắp hai tay trước ngực và nói "いただきます". Bắt nguồn từ khiêm nhường ngữ của nhận lãnh (頂く - đưa lên đỉnh đầu tôn kính). Mang hàm ý cảm tạ sinh mệnh của động thực vật đã tạo nên món ăn và công sức người nông dân, đầu bếp.',
+    imageUrl: 'https://images.unsplash.com/photo-1552611052-33e04de081de?auto=format&fit=crop&w=800&q=80',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1552611052-33e04de081de?auto=format&fit=crop&w=400&q=80',
+    examples: [
+      {
+        id: 'ex-ita-1',
+        japanese: 'みんなで「いただきます」と言って食べ始めました。',
+        reading: 'Minna de "itadakimasu" to itte tabehajimemashita.',
+        vietnamese: 'Mọi người cùng nói "Itadakimasu" rồi bắt đầu dùng bữa.'
+      }
+    ],
+    status: 'mastered',
+    reviewCount: 4,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'card-neko',
+    deckId: 'deck-kanji-starter',
+    title: '猫 (Neko) - Con mèo',
+    japanese: '猫',
+    reading: 'ねこ (Neko)',
+    meaning: 'Con mèo',
+    jlpt: 'N5',
+    category: 'Kanji',
+    description: 'Chữ Hán 猫 có bộ Khuyển (犭 - loài thú 4 chân) kết hợp với chữ Miêu (苗 - cây mạ non, vừa là tượng thanh tiếng mèo kêu meo meo). Mèo rất được yêu chuộng tại Nhật Bản, nổi tiếng với chú mèo may mắn Maneki-neko (招き猫) vẫy tay gọi tài lộc.',
+    imageUrl: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=800&q=80',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=400&q=80',
+    examples: [
+      {
+        id: 'ex-neko-1',
+        japanese: '我が家には黒い猫が二匹います。',
+        reading: 'Wagaya ni wa kuroi neko ga nihiki imasu.',
+        vietnamese: 'Nhà tôi có hai chú mèo màu đen.'
+      }
+    ],
+    status: 'new',
+    reviewCount: 0,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  }
+];
+
+// Fallback IndexedDB helper
+function openFallbackDatabase(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    if (typeof window === 'undefined' || !window.indexedDB) {
+      reject(new Error('IndexedDB not supported'));
+      return;
+    }
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    request.onupgradeneeded = (event: IDBVersionChangeEvent) => {
+      const db = (event.target as IDBOpenDBRequest).result;
+      if (!db.objectStoreNames.contains(STORE_CARDS)) {
+        db.createObjectStore(STORE_CARDS, { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains(STORE_DECKS)) {
+        db.createObjectStore(STORE_DECKS, { keyPath: 'id' });
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+const VAULT_KEY = 'nihonflash_user_protected_vault';
+
+/**
+ * Initialize and load initial data with 2-way Smart Sync & Data Protection:
+ * - Detects any custom edits in client (like user's custom Kaisha photo)
+ * - Automatically syncs and merges customizations with server on startup
+ * - Guarantees deployments will never overwrite user-customized cards or media!
+ */
+export async function initializeStorage(): Promise<{ cards: Flashcard[]; decks: Deck[]; isServerConnected: boolean }> {
+  try {
+    // 1. Retrieve any local cards and custom uploads currently in browser storage
+    let localCards: Flashcard[] = [];
+    try {
+      const db = await openFallbackDatabase();
+      localCards = await new Promise<Flashcard[]>((resolve) => {
+        const tx = db.transaction(STORE_CARDS, 'readonly');
+        const req = tx.objectStore(STORE_CARDS).getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => resolve([]);
+      });
+    } catch {
+      // ignore
+    }
+
+    // Secondary safety vault check
+    if (localCards.length === 0 && typeof window !== 'undefined') {
+      try {
+        const vault = localStorage.getItem(VAULT_KEY);
+        if (vault) localCards = JSON.parse(vault);
+      } catch {
+        // ignore
+      }
+    }
+
+    // 2. Perform Smart Sync with Server (protects client custom uploads & merges)
+    const data = await api.syncWithServer(localCards);
+
+    // Guarantee: If client had user-customized media that server didn't have, preserve it!
+    const preservedCards = data.cards.map((serverCard) => {
+      const localCard = localCards.find((c) => c.id === serverCard.id);
+      if (
+        localCard &&
+        localCard.imageUrl &&
+        !localCard.imageUrl.includes('unsplash.com/photo-1486406146926') &&
+        (localCard.imageUrl.startsWith('data:') || localCard.imageUrl.startsWith('/uploads/') || localCard.imageUrl !== serverCard.imageUrl)
+      ) {
+        return {
+          ...serverCard,
+          imageUrl: localCard.imageUrl,
+          thumbnailUrl: localCard.thumbnailUrl || localCard.imageUrl,
+        };
+      }
+      return serverCard;
+    });
+
+    // 3. Update both IndexedDB and permanent Local Vault
+    try {
+      const db = await openFallbackDatabase();
+      const tx = db.transaction([STORE_CARDS, STORE_DECKS], 'readwrite');
+      const cStore = tx.objectStore(STORE_CARDS);
+      const dStore = tx.objectStore(STORE_DECKS);
+      cStore.clear();
+      dStore.clear();
+      for (const d of data.decks) dStore.put(d);
+      for (const c of preservedCards) cStore.put(c);
+    } catch {
+      // ignore
+    }
+
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(VAULT_KEY, JSON.stringify(preservedCards));
+      } catch {
+        // ignore
+      }
+    }
+
+    return { cards: preservedCards, decks: data.decks, isServerConnected: true };
+  } catch (serverErr) {
+    console.warn('Server API unavailable, falling back to local storage cache:', serverErr);
+
+    // 2. Fallback: Load from local cache
+    try {
+      const db = await openFallbackDatabase();
+      const decks = await new Promise<Deck[]>((resolve, reject) => {
+        const tx = db.transaction(STORE_DECKS, 'readonly');
+        const req = tx.objectStore(STORE_DECKS).getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => reject(req.error);
+      });
+
+      const cards = await new Promise<Flashcard[]>((resolve, reject) => {
+        const tx = db.transaction(STORE_CARDS, 'readonly');
+        const req = tx.objectStore(STORE_CARDS).getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => reject(req.error);
+      });
+
+      return {
+        cards: cards.length > 0 ? cards : INITIAL_CARDS,
+        decks: decks.length > 0 ? decks : INITIAL_DECKS,
+        isServerConnected: false,
+      };
+    } catch {
+      return {
+        cards: INITIAL_CARDS,
+        decks: INITIAL_DECKS,
+        isServerConnected: false,
+      };
+    }
+  }
+}
+
+/**
+ * Save flashcard to Server Persistence with dual protection in Local Vault
+ */
+export async function saveFlashcard(card: Flashcard): Promise<Flashcard> {
+  const cardWithTimestamp: Flashcard = {
+    ...card,
+    updatedAt: new Date().toISOString(),
+  };
+
+  try {
+    const saved = await api.saveFlashcard(cardWithTimestamp);
+    // Cache locally
+    try {
+      const db = await openFallbackDatabase();
+      const tx = db.transaction(STORE_CARDS, 'readwrite');
+      tx.objectStore(STORE_CARDS).put(saved);
+    } catch {
+      // ignore
+    }
+    // Update local vault
+    if (typeof window !== 'undefined') {
+      try {
+        const rawVault = localStorage.getItem(VAULT_KEY);
+        const vaultCards: Flashcard[] = rawVault ? JSON.parse(rawVault) : [];
+        const idx = vaultCards.findIndex((c) => c.id === saved.id);
+        if (idx >= 0) vaultCards[idx] = saved;
+        else vaultCards.unshift(saved);
+        localStorage.setItem(VAULT_KEY, JSON.stringify(vaultCards));
+      } catch {
+        // ignore
+      }
+    }
+    return saved;
+  } catch (err) {
+    console.warn('Server save failed, saving locally:', err);
+    try {
+      const db = await openFallbackDatabase();
+      const tx = db.transaction(STORE_CARDS, 'readwrite');
+      tx.objectStore(STORE_CARDS).put(cardWithTimestamp);
+    } catch {
+      // ignore
+    }
+    return cardWithTimestamp;
+  }
+}
+
+/**
+ * Delete flashcard from Server Persistence
+ */
+export async function deleteFlashcard(cardId: string): Promise<void> {
+  try {
+    await api.deleteFlashcard(cardId);
+    try {
+      const db = await openFallbackDatabase();
+      const tx = db.transaction(STORE_CARDS, 'readwrite');
+      tx.objectStore(STORE_CARDS).delete(cardId);
+    } catch {
+      // ignore
+    }
+  } catch (err) {
+    console.warn('Server delete failed, deleting locally:', err);
+    try {
+      const db = await openFallbackDatabase();
+      const tx = db.transaction(STORE_CARDS, 'readwrite');
+      tx.objectStore(STORE_CARDS).delete(cardId);
+    } catch {
+      // ignore
+    }
+  }
+}
+
+/**
+ * Save deck to Server Persistence
+ */
+export async function saveDeck(deck: Deck): Promise<Deck> {
+  try {
+    const isExisting = deck.id && !deck.id.startsWith('temp-');
+    let saved: Deck;
+    if (isExisting) {
+      saved = await api.updateDeck(deck.id, deck);
+    } else {
+      saved = await api.createDeck(deck);
+    }
+    try {
+      const db = await openFallbackDatabase();
+      const tx = db.transaction(STORE_DECKS, 'readwrite');
+      tx.objectStore(STORE_DECKS).put(saved);
+    } catch {
+      // ignore
+    }
+    return saved;
+  } catch (err) {
+    console.warn('Server save deck failed, saving locally:', err);
+    try {
+      const db = await openFallbackDatabase();
+      const tx = db.transaction(STORE_DECKS, 'readwrite');
+      tx.objectStore(STORE_DECKS).put(deck);
+    } catch {
+      // ignore
+    }
+    return deck;
+  }
+}
+
+/**
+ * Delete deck from Server Persistence
+ */
+export async function deleteDeck(deckId: string): Promise<void> {
+  try {
+    await api.deleteDeck(deckId);
+    try {
+      const db = await openFallbackDatabase();
+      const tx = db.transaction(STORE_DECKS, 'readwrite');
+      tx.objectStore(STORE_DECKS).delete(deckId);
+    } catch {
+      // ignore
+    }
+  } catch (err) {
+    console.warn('Server delete deck failed, deleting locally:', err);
+    try {
+      const db = await openFallbackDatabase();
+      const tx = db.transaction(STORE_DECKS, 'readwrite');
+      tx.objectStore(STORE_DECKS).delete(deckId);
+    } catch {
+      // ignore
+    }
+  }
+}
+
+/**
+ * Reset server database to default sample data AND cleans all uploaded files
+ */
+export async function resetAllData(): Promise<{ cards: Flashcard[]; decks: Deck[] }> {
+  try {
+    const res = await api.resetToSample();
+    try {
+      const db = await openFallbackDatabase();
+      const tx = db.transaction([STORE_CARDS, STORE_DECKS], 'readwrite');
+      tx.objectStore(STORE_CARDS).clear();
+      tx.objectStore(STORE_DECKS).clear();
+      for (const d of res.decks) tx.objectStore(STORE_DECKS).put(d);
+      for (const c of res.cards) tx.objectStore(STORE_CARDS).put(c);
+    } catch {
+      // ignore
+    }
+    return res;
+  } catch {
+    return { cards: INITIAL_CARDS, decks: INITIAL_DECKS };
+  }
+}
+
+/**
+ * Completely wipe all data and uploaded media from server (0 MB, 0 cards)
+ */
+export async function clearAllData(): Promise<{ cards: Flashcard[]; decks: Deck[] }> {
+  try {
+    const res = await api.clearAllData();
+    try {
+      const db = await openFallbackDatabase();
+      const tx = db.transaction([STORE_CARDS, STORE_DECKS], 'readwrite');
+      tx.objectStore(STORE_CARDS).clear();
+      tx.objectStore(STORE_DECKS).clear();
+      for (const d of res.decks) tx.objectStore(STORE_DECKS).put(d);
+    } catch {
+      // ignore
+    }
+    return res;
+  } catch {
+    return { cards: [], decks: [] };
+  }
+}
+
+/**
+ * Export full backup from Server
+ */
+export async function exportAllData(): Promise<string> {
+  try {
+    return await api.exportBackup();
+  } catch {
+    const { cards, decks } = await initializeStorage();
+    return JSON.stringify({ version: '1.0', exportDate: new Date().toISOString(), decks, cards }, null, 2);
+  }
+}
+
+/**
+ * Import backup onto Server
+ */
+export async function importData(jsonData: string): Promise<{ cards: Flashcard[]; decks: Deck[] }> {
+  try {
+    await api.importBackup(jsonData);
+    const updated = await api.getInitialData();
+    return updated;
+  } catch (err: any) {
+    throw new Error(err.message || 'Lỗi khôi phục sao lưu lên máy chủ');
+  }
+}
