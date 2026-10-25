@@ -5,6 +5,7 @@ import type {
   UploadResult,
   AppData,
 } from '../types/flashcard';
+import { uploadToCloudinary } from './cloudinary';
 
 export interface ServerHealth {
   status: string;
@@ -141,20 +142,31 @@ export const api = {
 
   // Upload
   async uploadFile(file: File): Promise<UploadResult> {
-    const formData = new FormData();
-    formData.append('file', file);
+    try {
+      const cloudRes = await uploadToCloudinary(file);
+      return {
+        url: cloudRes.secure_url,
+        filename: file.name,
+        mimetype: file.type,
+        size: cloudRes.bytes || file.size,
+      };
+    } catch (cloudErr) {
+      console.warn('[Upload] Cloudinary upload error, trying local server fallback:', cloudErr);
+      const formData = new FormData();
+      formData.append('file', file);
 
-    const res = await fetch(apiUrl('/api/upload'), {
-      method: 'POST',
-      body: formData,
-    });
+      const res = await fetch(apiUrl('/api/upload'), {
+        method: 'POST',
+        body: formData,
+      });
 
-    if (!res.ok) {
-      const errorBody = await res.json().catch(() => ({}));
-      const message = errorBody?.error || 'Lỗi tải tệp lên máy chủ';
-      throw new Error(message);
+      if (!res.ok) {
+        const errorBody = await res.json().catch(() => ({}));
+        const message = errorBody?.error || 'Lỗi tải tệp lên máy chủ';
+        throw new Error(message);
+      }
+      return res.json();
     }
-    return res.json();
   },
 
   // Backup & Restore
