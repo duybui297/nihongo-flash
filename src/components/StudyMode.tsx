@@ -43,11 +43,19 @@ export const StudyMode: React.FC<StudyModeProps> = ({
     again: 0,
   });
   const [isCompleted, setIsCompleted] = useState(false);
-  const [isImageLoading, setIsImageLoading] = useState(true);
+  const [isImageLoading, setIsImageLoading] = useState(false);
+
+  const currentCard = studyCards[currentIndex];
 
   useEffect(() => {
+    if (!currentCard?.imageUrl) {
+      setIsImageLoading(false);
+      return;
+    }
     setIsImageLoading(true);
-  }, [currentIndex, isFlipped]);
+    const timer = setTimeout(() => setIsImageLoading(false), 1200);
+    return () => clearTimeout(timer);
+  }, [currentIndex, isFlipped, currentCard?.imageUrl]);
 
   // Track initial setup so parent card updates don't reset the index (Fixes B3)
   const isInitializedRef = useRef(false);
@@ -73,7 +81,6 @@ export const StudyMode: React.FC<StudyModeProps> = ({
     setIsCompleted(false);
   }, [cards, initialCardId]);
 
-  const currentCard = studyCards[currentIndex];
 
   const triggerConfetti = () => {
     try {
@@ -401,12 +408,17 @@ export const StudyMode: React.FC<StudyModeProps> = ({
             ) : currentCard.imageUrl ? (
               <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-stone-900 to-rose-950 aspect-video max-h-64 mx-auto w-full shadow-md flex items-center justify-center p-2">
                 {isImageLoading && (
-                  <div className="absolute inset-0 bg-stone-900 flex flex-col items-center justify-center gap-2 select-none z-10 animate-pulse">
+                  <div className="absolute inset-0 bg-stone-900 flex flex-col items-center justify-center gap-2 select-none z-10 animate-pulse pointer-events-none">
                     <Loader2 className="w-6 h-6 animate-spin text-rose-500" />
                     <span className="text-xs font-medium text-stone-300">Đang tải ảnh...</span>
                   </div>
                 )}
                 <img
+                  ref={(el) => {
+                    if (el?.complete && el.naturalWidth > 0) {
+                      setIsImageLoading(false);
+                    }
+                  }}
                   src={resolveMediaUrl(currentCard.imageUrl)}
                   alt={currentCard.title}
                   onLoad={() => setIsImageLoading(false)}
@@ -414,9 +426,7 @@ export const StudyMode: React.FC<StudyModeProps> = ({
                     setIsImageLoading(false);
                     (e.target as HTMLElement).style.display = 'none';
                   }}
-                  className={`w-full h-full object-contain transition-opacity duration-300 ${
-                    isImageLoading ? 'opacity-0' : 'opacity-100'
-                  }`}
+                  className="w-full h-full object-contain"
                 />
               </div>
             ) : null}
