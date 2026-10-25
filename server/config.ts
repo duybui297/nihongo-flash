@@ -5,6 +5,7 @@ const ROOT_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'
 
 export const config = {
   port: Number(process.env.PORT) || 3000,
+  basePath: (process.env.BASE_PATH || '').replace(/\/+$/, ''),
   isProduction: process.env.NODE_ENV === 'production',
   rootDir: ROOT_DIR,
   dataDir: path.resolve(ROOT_DIR, 'data'),

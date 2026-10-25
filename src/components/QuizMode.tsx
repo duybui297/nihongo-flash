@@ -13,6 +13,7 @@ import {
 import confetti from 'canvas-confetti';
 import { speakJapanese } from '../services/speech';
 import { shuffleArray } from '../utils/shuffle';
+import { resolveMediaUrl } from '../utils/media';
 
 interface QuizModeProps {
   cards: Flashcard[];
@@ -284,7 +285,7 @@ export const QuizMode: React.FC<QuizModeProps> = ({ cards, onExit }) => {
         {currentQ.card.thumbnailUrl && (
           <div className="w-24 h-16 rounded-xl overflow-hidden bg-stone-900 mx-auto border border-stone-200 opacity-90">
             <img
-              src={currentQ.card.thumbnailUrl}
+              src={resolveMediaUrl(currentQ.card.thumbnailUrl)}
               alt="Hint"
               className="w-full h-full object-cover"
             />

@@ -14,6 +14,7 @@ import {
 import confetti from 'canvas-confetti';
 import { speakJapanese } from '../services/speech';
 import { shuffleArray } from '../utils/shuffle';
+import { resolveMediaUrl } from '../utils/media';
 
 interface StudyModeProps {
   cards: Flashcard[];
@@ -244,7 +245,7 @@ export const StudyMode: React.FC<StudyModeProps> = ({
 
   if (!currentCard) return null;
 
-  const thumb = currentCard.thumbnailUrl || currentCard.imageUrl;
+  const thumb = resolveMediaUrl(currentCard.thumbnailUrl || currentCard.imageUrl);
 
   return (
     <div className="max-w-3xl mx-auto space-y-4">
@@ -382,7 +383,7 @@ export const StudyMode: React.FC<StudyModeProps> = ({
             {currentCard.videoUrl ? (
               <div className="rounded-2xl overflow-hidden bg-black aspect-video max-h-64 mx-auto w-full shadow-md">
                 <video
-                  src={currentCard.videoUrl}
+                  src={resolveMediaUrl(currentCard.videoUrl)}
                   controls
                   autoPlay
                   loop
@@ -394,7 +395,7 @@ export const StudyMode: React.FC<StudyModeProps> = ({
             ) : currentCard.imageUrl ? (
               <div className="rounded-2xl overflow-hidden bg-gradient-to-br from-stone-900 to-rose-950 aspect-video max-h-64 mx-auto w-full shadow-md flex items-center justify-center p-2">
                 <img
-                  src={currentCard.imageUrl}
+                  src={resolveMediaUrl(currentCard.imageUrl)}
                   alt={currentCard.title}
                   onError={(e) => {
                     (e.target as HTMLElement).style.display = 'none';

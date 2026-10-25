@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { speakJapanese } from '../services/speech';
 import { matchesSearch } from '../../shared/utils';
+import { resolveMediaUrl } from '../utils/media';
 
 type SortOption = 'newest' | 'oldest' | 'title' | 'status';
 
@@ -53,7 +54,8 @@ const CardThumbnailItem: React.FC<CardThumbnailItemProps> = ({
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const thumb = card.thumbnailUrl || card.imageUrl;
+  const thumb = resolveMediaUrl(card.thumbnailUrl || card.imageUrl);
+  const videoSrc = resolveMediaUrl(card.videoUrl);
   const hasVideo = Boolean(card.videoUrl);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -685,7 +687,7 @@ export const FlashcardGrid: React.FC<FlashcardGridProps> = ({
               {previewCard.videoUrl ? (
                 <div className="rounded-xl overflow-hidden bg-black aspect-video flex items-center justify-center">
                   <video
-                    src={previewCard.videoUrl}
+                    src={resolveMediaUrl(previewCard.videoUrl)}
                     controls
                     playsInline
                     className="w-full h-full object-contain"
@@ -694,7 +696,7 @@ export const FlashcardGrid: React.FC<FlashcardGridProps> = ({
               ) : previewCard.imageUrl ? (
                 <div className="rounded-xl overflow-hidden bg-stone-900 aspect-video flex items-center justify-center">
                   <img
-                    src={previewCard.imageUrl}
+                    src={resolveMediaUrl(previewCard.imageUrl)}
                     alt={previewCard.title}
                     className="w-full h-full object-contain"
                   />

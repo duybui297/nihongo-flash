@@ -149,3 +149,17 @@ export function isImageUrl(url?: string): boolean {
   if (url.startsWith('data:image/')) return true;
   return /\.(jpg|jpeg|png|webp|gif|svg|avif)(\?.*)?$/i.test(url);
 }
+
+/**
+ * Resolves local media paths (/uploads/..., /assets/...) to include the configured BASE_PATH.
+ */
+export function resolveMediaUrl(url?: string): string | undefined {
+  if (!url) return undefined;
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) return url;
+  const basePath = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
+  if (basePath && url.startsWith('/') && !url.startsWith(basePath)) {
+    return `${basePath}${url}`;
+  }
+  return url;
+}
+

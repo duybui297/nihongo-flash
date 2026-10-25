@@ -23,8 +23,15 @@ export interface ClientStorageStats {
   maxFileSize: string;
 }
 
+const BASE_PATH = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
+
+export function apiUrl(path: string): string {
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  return `${BASE_PATH}${cleanPath}`;
+}
+
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(url, init);
+  const res = await fetch(apiUrl(url), init);
   if (!res.ok) {
     const errorBody = await res.json().catch(() => ({}));
     const message = (errorBody && typeof errorBody === 'object' && 'error' in errorBody && typeof errorBody.error === 'string')
@@ -137,7 +144,7 @@ export const api = {
     const formData = new FormData();
     formData.append('file', file);
 
-    const res = await fetch('/api/upload', {
+    const res = await fetch(apiUrl('/api/upload'), {
       method: 'POST',
       body: formData,
     });
