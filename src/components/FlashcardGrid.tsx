@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import type { Flashcard, Deck, JLPTLevel, StudyStatus } from '../types/flashcard';
 import { JLPT_LEVELS, STATUS_LABELS } from '../types/flashcard';
 import {
@@ -18,6 +18,8 @@ import {
   Filter,
   Eye,
   Camera,
+  Loader2,
+  UploadCloud,
 } from 'lucide-react';
 import { speakJapanese } from '../services/speech';
 import { matchesSearch } from '../../shared/utils';
@@ -52,11 +54,16 @@ const CardThumbnailItem: React.FC<CardThumbnailItemProps> = ({
 }) => {
   const [hasError, setHasError] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isImageLoading, setIsImageLoading] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const thumb = resolveMediaUrl(card.thumbnailUrl || card.imageUrl);
-  const videoSrc = resolveMediaUrl(card.videoUrl);
   const hasVideo = Boolean(card.videoUrl);
+
+  useEffect(() => {
+    setIsImageLoading(Boolean(thumb));
+    setHasError(false);
+  }, [thumb]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -77,13 +84,31 @@ const CardThumbnailItem: React.FC<CardThumbnailItemProps> = ({
         onClick={onPreview}
         className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-stone-900 overflow-hidden shrink-0 cursor-pointer border border-stone-200 flex items-center justify-center group/compactThumb"
       >
+        {isUploading && (
+          <div className="absolute inset-0 z-20 bg-stone-950/80 flex items-center justify-center">
+            <Loader2 className="w-4 h-4 animate-spin text-rose-500" />
+          </div>
+        )}
         {thumb && !hasError ? (
-          <img
-            src={thumb}
-            alt={card.title}
-            onError={() => setHasError(true)}
-            className="w-full h-full object-cover group-hover/compactThumb:scale-105 transition-transform"
-          />
+          <>
+            {isImageLoading && !isUploading && (
+              <div className="absolute inset-0 z-10 bg-stone-900 flex items-center justify-center animate-pulse">
+                <Loader2 className="w-4 h-4 text-rose-500 animate-spin" />
+              </div>
+            )}
+            <img
+              src={thumb}
+              alt={card.title}
+              onLoad={() => setIsImageLoading(false)}
+              onError={() => {
+                setIsImageLoading(false);
+                setHasError(true);
+              }}
+              className={`w-full h-full object-cover group-hover/compactThumb:scale-105 transition-all duration-300 ${
+                isImageLoading ? 'opacity-0' : 'opacity-100'
+              }`}
+            />
+          </>
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-stone-800 to-stone-950 flex flex-col items-center justify-center p-1 text-center">
             <span className="text-sm font-japanese font-bold text-white leading-none">
@@ -115,14 +140,42 @@ const CardThumbnailItem: React.FC<CardThumbnailItemProps> = ({
         onChange={handleFileChange}
       />
 
+      {/* Cloudinary Uploading Overlay Indicator */}
+      {isUploading && (
+        <div className="absolute inset-0 z-30 bg-stone-950/85 backdrop-blur-xs flex flex-col items-center justify-center gap-2 text-white">
+          <Loader2 className="w-7 h-7 animate-spin text-rose-500" />
+          <span className="text-xs font-semibold text-stone-200">Đang tải lên Cloudinary...</span>
+        </div>
+      )}
+
       {thumb && !hasError ? (
-        <img
-          src={thumb}
-          alt={card.title}
-          loading="lazy"
-          onError={() => setHasError(true)}
-          className="w-full h-full object-cover group-hover/thumb:scale-105 transition-transform duration-300"
-        />
+        <>
+          {/* Image Loading Skeleton Indicator */}
+          {isImageLoading && !isUploading && (
+            <div className="absolute inset-0 z-10 bg-stone-900 flex flex-col items-center justify-center gap-2 select-none animate-pulse">
+              <div className="relative flex items-center justify-center">
+                <Loader2 className="w-7 h-7 animate-spin text-rose-500" />
+                <ImageIcon className="w-3.5 h-3.5 text-stone-500 absolute" />
+              </div>
+              <span className="text-[11px] font-medium text-stone-400 tracking-wide">
+                Đang tải ảnh...
+              </span>
+            </div>
+          )}
+          <img
+            src={thumb}
+            alt={card.title}
+            loading="lazy"
+            onLoad={() => setIsImageLoading(false)}
+            onError={() => {
+              setIsImageLoading(false);
+              setHasError(true);
+            }}
+            className={`w-full h-full object-cover group-hover/thumb:scale-105 transition-all duration-300 ${
+              isImageLoading ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
+            }`}
+          />
+        </>
       ) : (
         /* Fallback Graphic when image fails or is missing */
         <div className="w-full h-full p-4 flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-stone-900 to-rose-950 text-white relative select-none">
@@ -231,6 +284,11 @@ export const FlashcardGrid: React.FC<FlashcardGridProps> = ({
 
   // Preview Modal state
   const [previewCard, setPreviewCard] = useState<Flashcard | null>(null);
+  const [isPreviewImgLoading, setIsPreviewImgLoading] = useState(true);
+
+  useEffect(() => {
+    setIsPreviewImgLoading(true);
+  }, [previewCard?.id]);
 
   // Filter cards
   const filteredCards = useMemo(() => {
@@ -694,11 +752,21 @@ export const FlashcardGrid: React.FC<FlashcardGridProps> = ({
                   />
                 </div>
               ) : previewCard.imageUrl ? (
-                <div className="rounded-xl overflow-hidden bg-stone-900 aspect-video flex items-center justify-center">
+                <div className="relative rounded-xl overflow-hidden bg-stone-900 aspect-video flex items-center justify-center">
+                  {isPreviewImgLoading && (
+                    <div className="absolute inset-0 bg-stone-900 flex flex-col items-center justify-center gap-2 select-none animate-pulse">
+                      <Loader2 className="w-6 h-6 animate-spin text-rose-500" />
+                      <span className="text-xs text-stone-400">Đang tải ảnh...</span>
+                    </div>
+                  )}
                   <img
                     src={resolveMediaUrl(previewCard.imageUrl)}
                     alt={previewCard.title}
-                    className="w-full h-full object-contain"
+                    onLoad={() => setIsPreviewImgLoading(false)}
+                    onError={() => setIsPreviewImgLoading(false)}
+                    className={`w-full h-full object-contain transition-opacity duration-300 ${
+                      isPreviewImgLoading ? 'opacity-0' : 'opacity-100'
+                    }`}
                   />
                 </div>
               ) : null}

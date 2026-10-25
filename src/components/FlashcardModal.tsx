@@ -10,6 +10,7 @@ import {
   Sparkles,
   Camera,
   FileText,
+  Loader2,
 } from 'lucide-react';
 import type { Flashcard, Deck, JLPTLevel, CardCategory, ExampleSentence } from '../types/flashcard';
 import { JLPT_LEVELS, CARD_CATEGORIES, UPLOAD_ACCEPT_IMAGE, UPLOAD_ACCEPT_VIDEO } from '../types/flashcard';
@@ -61,6 +62,11 @@ export const FlashcardModal: React.FC<FlashcardModalProps> = ({
   const [isProcessingMedia, setIsProcessingMedia] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [isImgLoading, setIsImgLoading] = useState(false);
+
+  useEffect(() => {
+    if (imageUrl) setIsImgLoading(true);
+  }, [imageUrl]);
 
   const imageFileInputRef = useRef<HTMLInputElement>(null);
   const videoFileInputRef = useRef<HTMLInputElement>(null);
@@ -589,10 +595,22 @@ export const FlashcardModal: React.FC<FlashcardModalProps> = ({
                   </span>
                   {imageUrl ? (
                     <div className="relative rounded-xl overflow-hidden border border-stone-200 bg-stone-900 group aspect-video flex items-center justify-center">
+                      {(isProcessingMedia || isImgLoading) && (
+                        <div className="absolute inset-0 bg-stone-950/80 z-20 flex flex-col items-center justify-center gap-2 select-none animate-pulse">
+                          <Loader2 className="w-6 h-6 animate-spin text-rose-500" />
+                          <span className="text-xs text-stone-200 font-medium">
+                            {isProcessingMedia ? 'Đang tải lên Cloudinary...' : 'Đang nạp ảnh...'}
+                          </span>
+                        </div>
+                      )}
                       <img
                         src={imageUrl}
                         alt="Preview"
-                        className="w-full h-full object-contain"
+                        onLoad={() => setIsImgLoading(false)}
+                        onError={() => setIsImgLoading(false)}
+                        className={`w-full h-full object-contain transition-opacity duration-300 ${
+                          isImgLoading ? 'opacity-0' : 'opacity-100'
+                        }`}
                       />
                       <div className="absolute top-2 right-2 flex gap-1.5 opacity-90 group-hover:opacity-100 transition-opacity">
                         <button
