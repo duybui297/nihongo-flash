@@ -1,22 +1,19 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Flashcard, StudyStatus } from '../types/flashcard';
-import { 
-  Volume2, 
-  RotateCw, 
-  ChevronLeft, 
-  ChevronRight, 
-  CheckCircle2, 
-  Flame, 
-  Clock, 
-  X, 
-  Shuffle, 
-  Sparkles, 
-  Video, 
-  Image as ImageIcon,
-  BookOpen
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import type { Flashcard, StudyStatus } from '../types/flashcard';
+import {
+  Volume2,
+  RotateCw,
+  ChevronLeft,
+  ChevronRight,
+  X,
+  Shuffle,
+  Sparkles,
+  Video,
+  BookOpen,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { speakJapanese } from '../services/speech';
+import { shuffleArray } from '../utils/shuffle';
 
 interface StudyModeProps {
   cards: Flashcard[];
@@ -45,14 +42,18 @@ export const StudyMode: React.FC<StudyModeProps> = ({
   });
   const [isCompleted, setIsCompleted] = useState(false);
 
-  // Initialize deck
+  // Track initial setup so parent card updates don't reset the index (Fixes B3)
+  const isInitializedRef = useRef(false);
+
   useEffect(() => {
     if (cards.length === 0) return;
+    if (isInitializedRef.current) return;
+
+    isInitializedRef.current = true;
 
     if (initialCardId) {
       const idx = cards.findIndex((c) => c.id === initialCardId);
       if (idx !== -1) {
-        // Put the target card first, then the rest
         const reordered = [cards[idx], ...cards.filter((_, i) => i !== idx)];
         setStudyCards(reordered);
         setCurrentIndex(0);
@@ -102,8 +103,7 @@ export const StudyMode: React.FC<StudyModeProps> = ({
   }, [currentIndex]);
 
   const handleShuffle = () => {
-    const shuffled = [...studyCards].sort(() => Math.random() - 0.5);
-    setStudyCards(shuffled);
+    setStudyCards((prev) => shuffleArray(prev));
     setCurrentIndex(0);
     setIsFlipped(false);
   };
@@ -122,6 +122,11 @@ export const StudyMode: React.FC<StudyModeProps> = ({
       newStatus = 'learning';
       setSessionResults((prev) => ({ ...prev, again: prev.again + 1 }));
     }
+
+    // Update local card state in place so we don't desync
+    setStudyCards((prev) =>
+      prev.map((c, i) => (i === currentIndex ? { ...c, status: newStatus } : c))
+    );
 
     await onUpdateCardStatus(currentCard.id, newStatus);
     handleNext();
@@ -156,13 +161,13 @@ export const StudyMode: React.FC<StudyModeProps> = ({
 
   if (cards.length === 0) {
     return (
-      <div className="bg-white rounded-2xl border border-stone-200 p-12 text-center max-w-md mx-auto">
+      <div className="bg-white rounded-2xl border border-stone-200 p-12 text-center max-w-md mx-auto shadow-sm">
         <BookOpen className="w-12 h-12 text-stone-300 mx-auto mb-3" />
         <h3 className="text-base font-bold text-stone-900 mb-1">Không có thẻ để ôn tập</h3>
         <p className="text-xs text-stone-500 mb-4">Vui lòng thêm thẻ vào bộ trước khi bắt đầu học.</p>
         <button
           onClick={onExit}
-          className="px-4 py-2 bg-stone-900 text-white text-xs font-semibold rounded-lg"
+          className="px-4 py-2 bg-stone-900 text-white text-xs font-semibold rounded-lg hover:bg-stone-800 transition-colors"
         >
           Quay lại danh sách
         </button>
@@ -278,7 +283,7 @@ export const StudyMode: React.FC<StudyModeProps> = ({
       </div>
 
       {/* FLASHCARD (Interactive 3D Flip Card Container) */}
-      <div 
+      <div
         onClick={handleFlip}
         className="relative min-h-[440px] bg-white rounded-3xl border-2 border-stone-200 shadow-xl cursor-pointer transition-all duration-300 hover:border-rose-300 flex flex-col justify-between overflow-hidden"
       >
@@ -351,8 +356,8 @@ export const StudyMode: React.FC<StudyModeProps> = ({
           </div>
         ) : (
           /* ================= BACK SIDE (Detailed View with Media & Description) ================= */
-          <div 
-            onClick={(e) => e.stopPropagation()} 
+          <div
+            onClick={(e) => e.stopPropagation()}
             className="p-6 sm:p-8 flex-1 flex flex-col justify-between space-y-5 overflow-y-auto max-h-[600px]"
           >
             {/* Pronunciation & Meaning */}

@@ -1,4 +1,10 @@
-import { Flashcard, Deck, StudyStatus } from '../types/flashcard';
+import type {
+  Flashcard,
+  Deck,
+  StudyStatus,
+  UploadResult,
+  AppData,
+} from '../types/flashcard';
 
 export interface ServerHealth {
   status: string;
@@ -9,57 +15,62 @@ export interface ServerHealth {
   serverTime: string;
 }
 
+export interface ClientStorageStats {
+  totalBytes: number;
+  totalMB: string;
+  fileCount: number;
+  freeDisk: string;
+  maxFileSize: string;
+}
+
+async function request<T>(url: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(url, init);
+  if (!res.ok) {
+    const errorBody = await res.json().catch(() => ({}));
+    const message = (errorBody && typeof errorBody === 'object' && 'error' in errorBody && typeof errorBody.error === 'string')
+      ? errorBody.error
+      : `Yêu cầu thất bại (${res.status})`;
+    throw new Error(message);
+  }
+  return res.json();
+}
+
 export const api = {
-  // Check server health
+  // Server health
   async checkHealth(): Promise<ServerHealth> {
-    const res = await fetch('/api/health');
-    if (!res.ok) throw new Error('Không thể kết nối với máy chủ');
-    return res.json();
+    return request<ServerHealth>('/api/health');
   },
 
-  // Bootstrap data (cards + decks)
-  async getInitialData(): Promise<{ cards: Flashcard[]; decks: Deck[] }> {
-    const res = await fetch('/api/data');
-    if (!res.ok) throw new Error('Lỗi tải dữ liệu từ máy chủ');
-    return res.json();
+  // Bootstrap data
+  async getInitialData(): Promise<AppData> {
+    return request<AppData>('/api/data');
   },
 
   // Decks
   async getDecks(): Promise<Deck[]> {
-    const res = await fetch('/api/decks');
-    if (!res.ok) throw new Error('Lỗi lấy danh sách bộ thẻ');
-    return res.json();
+    return request<Deck[]>('/api/decks');
   },
 
   async createDeck(deck: Partial<Deck>): Promise<Deck> {
-    const res = await fetch('/api/decks', {
+    return request<Deck>('/api/decks', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(deck),
     });
-    if (!res.ok) throw new Error('Lỗi tạo bộ thẻ trên máy chủ');
-    return res.json();
   },
 
   async updateDeck(id: string, deck: Partial<Deck>): Promise<Deck> {
-    const res = await fetch(`/api/decks/${id}`, {
+    return request<Deck>(`/api/decks/${encodeURIComponent(id)}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(deck),
     });
-    if (!res.ok) throw new Error('Lỗi cập nhật bộ thẻ trên máy chủ');
-    return res.json();
   },
 
   async deleteDeck(id: string): Promise<{ success: boolean; fallbackDeckId: string }> {
-    const res = await fetch(`/api/decks/${id}`, {
+    return request<{ success: boolean; fallbackDeckId: string }>(`/api/decks/${encodeURIComponent(id)}`, {
       method: 'DELETE',
     });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || 'Lỗi xoá bộ thẻ trên máy chủ');
-    }
-    return res.json();
   },
 
   // Flashcards
@@ -70,63 +81,59 @@ export const api = {
     if (filters?.status) params.append('status', filters.status);
     if (filters?.search) params.append('search', filters.search);
 
-    const res = await fetch(`/api/flashcards?${params.toString()}`);
-    if (!res.ok) throw new Error('Lỗi lấy danh sách flashcard');
-    return res.json();
+    const query = params.toString();
+    return request<Flashcard[]>(`/api/flashcards${query ? `?${query}` : ''}`);
   },
 
   async getFlashcard(id: string): Promise<Flashcard> {
-    const res = await fetch(`/api/flashcards/${id}`);
-    if (!res.ok) throw new Error('Không tìm thấy thẻ trên máy chủ');
-    return res.json();
+    return request<Flashcard>(`/api/flashcards/${encodeURIComponent(id)}`);
   },
 
   async saveFlashcard(card: Flashcard): Promise<Flashcard> {
-    const isExisting = card.id && !card.id.startsWith('temp-');
-    // Check if card exists by trying PUT, else POST
-    const method = isExisting ? 'PUT' : 'POST';
-    const url = isExisting ? `/api/flashcards/${card.id}` : '/api/flashcards';
+    const isExisting = Boolean(card.id && !card.id.startsWith('temp-'));
+    if (isExisting) {
+      try {
+        return await request<Flashcard>(`/api/flashcards/${encodeURIComponent(card.id)}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(card),
+        });
+      } catch (err: unknown) {
+        // Fallback to POST if 404
+        if (err instanceof Error && err.message.includes('404')) {
+          return request<Flashcard>('/api/flashcards', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(card),
+          });
+        }
+        throw err;
+      }
+    }
 
-    const res = await fetch(url, {
-      method,
+    return request<Flashcard>('/api/flashcards', {
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(card),
     });
-
-    if (!res.ok && method === 'PUT') {
-      // If PUT failed with 404, fallback to POST
-      const postRes = await fetch('/api/flashcards', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(card),
-      });
-      if (!postRes.ok) throw new Error('Lỗi lưu thẻ lên máy chủ');
-      return postRes.json();
-    }
-
-    if (!res.ok) throw new Error('Lỗi lưu thẻ lên máy chủ');
-    return res.json();
   },
 
   async updateCardStatus(id: string, status: StudyStatus): Promise<Flashcard> {
-    const res = await fetch(`/api/flashcards/${id}/status`, {
+    return request<Flashcard>(`/api/flashcards/${encodeURIComponent(id)}/status`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status }),
     });
-    if (!res.ok) throw new Error('Lỗi cập nhật trạng thái thẻ');
-    return res.json();
   },
 
   async deleteFlashcard(id: string): Promise<void> {
-    const res = await fetch(`/api/flashcards/${id}`, {
+    await request<{ success: boolean }>(`/api/flashcards/${encodeURIComponent(id)}`, {
       method: 'DELETE',
     });
-    if (!res.ok) throw new Error('Lỗi xoá thẻ khỏi máy chủ');
   },
 
-  // Direct Server File Upload (Image / Video)
-  async uploadFile(file: File): Promise<{ url: string; filename: string; mimetype: string; size: number }> {
+  // Upload
+  async uploadFile(file: File): Promise<UploadResult> {
     const formData = new FormData();
     formData.append('file', file);
 
@@ -136,8 +143,9 @@ export const api = {
     });
 
     if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || 'Lỗi tải tệp lên máy chủ');
+      const errorBody = await res.json().catch(() => ({}));
+      const message = errorBody?.error || 'Lỗi tải tệp lên máy chủ';
+      throw new Error(message);
     }
     return res.json();
   },
@@ -151,69 +159,36 @@ export const api = {
 
   async importBackup(jsonData: string): Promise<{ success: boolean; decksCount: number; cardsCount: number }> {
     const parsed = JSON.parse(jsonData);
-    const res = await fetch('/api/backup/import', {
+    return request<{ success: boolean; decksCount: number; cardsCount: number }>('/api/backup/import', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(parsed),
     });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || 'Lỗi khôi phục sao lưu lên máy chủ');
-    }
-    return res.json();
   },
 
-  async resetToSample(): Promise<{ cards: Flashcard[]; decks: Deck[] }> {
-    const res = await fetch('/api/backup/reset', {
+  async resetToSample(): Promise<AppData> {
+    return request<AppData>('/api/backup/reset', {
       method: 'POST',
     });
-    if (!res.ok) throw new Error('Lỗi đặt lại dữ liệu mẫu trên máy chủ');
-    const data = await res.json();
-    return { cards: data.cards, decks: data.decks };
   },
 
-  async clearAllData(): Promise<{ cards: Flashcard[]; decks: Deck[] }> {
-    const res = await fetch('/api/backup/clear', {
+  async clearAllData(): Promise<AppData> {
+    return request<AppData>('/api/backup/clear', {
       method: 'POST',
     });
-    if (!res.ok) throw new Error('Lỗi xoá sạch toàn bộ dữ liệu trên máy chủ');
-    const data = await res.json();
-    return { cards: data.cards, decks: data.decks };
   },
 
-  async getStorageStats(): Promise<{
-    totalBytes: number;
-    totalMB: string;
-    fileCount: number;
-    freeDisk: string;
-    maxFileSize: string;
-  }> {
+  async getStorageStats(): Promise<ClientStorageStats> {
     try {
-      const res = await fetch('/api/storage/stats');
-      if (!res.ok) throw new Error('Lỗi lấy thông tin bộ nhớ');
-      return res.json();
+      return await request<ClientStorageStats>('/api/storage/stats');
     } catch {
       return {
         totalBytes: 0,
         totalMB: '0 MB',
         fileCount: 0,
-        freeDisk: '> 180 GB',
-        maxFileSize: '100 MB / tệp',
+        freeDisk: '> 50 GB',
+        maxFileSize: '50 MB / tệp',
       };
-    }
-  },
-
-  async syncWithServer(localCards: Flashcard[]): Promise<{ cards: Flashcard[]; decks: Deck[] }> {
-    try {
-      const res = await fetch('/api/sync', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cards: localCards }),
-      });
-      if (!res.ok) throw new Error('Lỗi đồng bộ dữ liệu');
-      return res.json();
-    } catch {
-      return api.getInitialData();
     }
   },
 };

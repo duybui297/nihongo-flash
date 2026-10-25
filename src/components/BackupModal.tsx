@@ -1,17 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Database, 
-  X, 
-  Download, 
-  Upload, 
-  RotateCcw, 
-  Check, 
+import {
+  Database,
+  X,
+  Download,
+  Upload,
+  RotateCcw,
+  Check,
   AlertTriangle,
-  Trash2 
+  Trash2,
 } from 'lucide-react';
 import { exportAllData, importData, resetAllData, clearAllData } from '../services/storage';
-import { api } from '../services/api';
-import { Flashcard, Deck } from '../types/flashcard';
+import { api, ClientStorageStats } from '../services/api';
+import type { Flashcard, Deck } from '../types/flashcard';
 
 interface BackupModalProps {
   isOpen: boolean;
@@ -29,16 +29,12 @@ export const BackupModal: React.FC<BackupModalProps> = ({
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [feedback, setFeedback] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
-  const [storageStats, setStorageStats] = useState<{
-    totalMB: string;
-    fileCount: number;
-    freeDisk: string;
-    maxFileSize: string;
-  }>({
+  const [storageStats, setStorageStats] = useState<ClientStorageStats>({
+    totalBytes: 0,
     totalMB: '0 MB',
     fileCount: 0,
-    freeDisk: '> 180 GB',
-    maxFileSize: '100 MB / tệp',
+    freeDisk: '> 50 GB',
+    maxFileSize: '50 MB / tệp',
   });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -46,14 +42,7 @@ export const BackupModal: React.FC<BackupModalProps> = ({
   // Load storage stats when modal opens
   useEffect(() => {
     if (isOpen) {
-      api.getStorageStats().then((stats) => {
-        setStorageStats({
-          totalMB: stats.totalMB || '0 MB',
-          fileCount: stats.fileCount || 0,
-          freeDisk: stats.freeDisk || '> 180 GB',
-          maxFileSize: stats.maxFileSize || '100 MB / tệp',
-        });
-      });
+      api.getStorageStats().then(setStorageStats);
       setFeedback(null);
     }
   }, [isOpen]);
@@ -97,12 +86,10 @@ export const BackupModal: React.FC<BackupModalProps> = ({
       });
       // Refresh storage stats
       api.getStorageStats().then(setStorageStats);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setFeedback({
-        message: err.message || 'Lỗi khôi phục tệp sao lưu. Vui lòng kiểm tra định dạng tệp JSON.',
-        type: 'error',
-      });
+      const message = err instanceof Error ? err.message : 'Lỗi khôi phục tệp sao lưu. Vui lòng kiểm tra định dạng JSON.';
+      setFeedback({ message, type: 'error' });
     } finally {
       setIsImporting(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -110,15 +97,15 @@ export const BackupModal: React.FC<BackupModalProps> = ({
   };
 
   const handleResetToSample = async () => {
-    if (confirm('Khôi phục dữ liệu mẫu ban đầu? Tất cả các tệp media đã tải lên sẽ được xóa sạch khỏi máy chủ và tải lại bộ thẻ chuẩn.')) {
+    if (confirm('Khôi phục dữ liệu mẫu ban đầu? Tất cả các tệp media đã tải lên sẽ được xóa sạch khỏi máy chủ và nạp lại bộ thẻ tiếng Nhật chuẩn.')) {
       try {
         const initial = await resetAllData();
         onDataRestored(initial.cards, initial.decks);
         const freshStats = await api.getStorageStats();
         setStorageStats(freshStats);
-        setFeedback({ message: 'Đã dọn sạch media cũ và khôi phục lại dữ liệu tiếng Nhật mẫu ban đầu thành công!', type: 'success' });
+        setFeedback({ message: 'Đã khôi phục lại dữ liệu mẫu tiếng Nhật ban đầu thành công!', type: 'success' });
       } catch {
-        setFeedback({ message: 'Lỗi khôi phục dữ liệu.', type: 'error' });
+        setFeedback({ message: 'Lỗi khôi phục dữ liệu mẫu.', type: 'error' });
       }
     }
   };
@@ -130,7 +117,7 @@ export const BackupModal: React.FC<BackupModalProps> = ({
         onDataRestored(cleared.cards, cleared.decks);
         const freshStats = await api.getStorageStats();
         setStorageStats(freshStats);
-        setFeedback({ message: 'Đã xoá sạch hoàn toàn dữ liệu và tệp tải lên khỏi máy chủ (Bộ nhớ đã về 0 MB)!', type: 'success' });
+        setFeedback({ message: 'Đã xoá sạch hoàn toàn dữ liệu và tệp tải lên khỏi máy chủ!', type: 'success' });
       } catch {
         setFeedback({ message: 'Lỗi khi xoá dữ liệu trên máy chủ.', type: 'error' });
       }
@@ -140,7 +127,6 @@ export const BackupModal: React.FC<BackupModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-stone-900/60 backdrop-blur-xs overflow-y-auto">
       <div className="relative w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-stone-200 overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-150">
-        
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-stone-100">
           <div className="flex items-center gap-2.5">
@@ -159,7 +145,6 @@ export const BackupModal: React.FC<BackupModalProps> = ({
 
         {/* Modal Body */}
         <div className="p-6 space-y-4 max-h-[82vh] overflow-y-auto">
-          
           {/* Feedback banner */}
           {feedback && (
             <div
@@ -180,10 +165,10 @@ export const BackupModal: React.FC<BackupModalProps> = ({
 
           {/* 1. Top Informational Callout */}
           <div className="rounded-2xl border border-stone-200/90 bg-stone-50/70 p-4 text-xs text-stone-700 leading-relaxed shadow-2xs">
-            Dữ liệu flashcard, hình ảnh và video của bạn được <strong className="text-stone-900 font-semibold">lưu trữ đồng bộ trên Máy chủ (Server)</strong>. Các thẻ mới tạo sẽ được lưu vĩnh viễn, xem được ở mọi thiết bị và cả trong <strong className="text-stone-900 font-semibold">Chế độ ẩn danh (Incognito)</strong>!
+            Dữ liệu flashcard, hình ảnh và video của bạn được <strong className="text-stone-900 font-semibold">lưu trữ trực tiếp trên Máy chủ (Server)</strong>. Các thẻ mới tạo sẽ được lưu vĩnh viễn, truy cập được ở mọi thiết bị và trình duyệt.
           </div>
 
-          {/* 2. DUNG LƯỢNG BỘ NHỚ MÁY CHỦ (Exact Dark Card requested by User) */}
+          {/* 2. DUNG LƯỢNG BỘ NHỚ MÁY CHỦ */}
           <div className="bg-[#1c1917] text-white rounded-2xl p-5 shadow-sm border border-stone-800 space-y-3.5">
             {/* Top row */}
             <div className="flex items-center justify-between gap-2">
@@ -232,7 +217,7 @@ export const BackupModal: React.FC<BackupModalProps> = ({
             <button
               onClick={handleExport}
               disabled={isExporting}
-              className="px-4 py-2 bg-stone-900 hover:bg-stone-800 active:bg-black text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-all active:scale-95 shrink-0"
+              className="px-4 py-2 bg-stone-900 hover:bg-stone-800 active:bg-black text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-all active:scale-95 shrink-0 disabled:opacity-50"
             >
               <Download className="w-4 h-4" />
               <span>{isExporting ? 'Đang xuất...' : 'Tải về JSON'}</span>
@@ -259,7 +244,7 @@ export const BackupModal: React.FC<BackupModalProps> = ({
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={isImporting}
-              className="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all active:scale-95 shrink-0"
+              className="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all active:scale-95 shrink-0 disabled:opacity-50"
             >
               <Upload className="w-4 h-4" />
               <span>{isImporting ? 'Đang đọc...' : 'Chọn file JSON'}</span>
@@ -285,7 +270,7 @@ export const BackupModal: React.FC<BackupModalProps> = ({
             </button>
           </div>
 
-          {/* 6. Xoá hẳn toàn bộ dữ liệu & giải phóng bộ nhớ về 0 MB */}
+          {/* 6. Xoá hẳn toàn bộ dữ liệu (Fixes B2) */}
           <div className="border border-red-200 rounded-2xl p-4 sm:p-5 bg-red-50/30 flex items-center justify-between gap-3 shadow-2xs hover:border-red-300 transition-colors">
             <div>
               <h3 className="text-sm font-bold text-red-950 flex items-center gap-1.5">
@@ -304,7 +289,6 @@ export const BackupModal: React.FC<BackupModalProps> = ({
               <span>Xoá toàn bộ</span>
             </button>
           </div>
-
         </div>
 
         {/* Modal Footer */}
@@ -316,7 +300,6 @@ export const BackupModal: React.FC<BackupModalProps> = ({
             Đóng
           </button>
         </div>
-
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "updatedAt": "2026-10-24T04:16:12.408Z",
+  "updatedAt": "2026-10-25T08:53:26.193Z",
   "decks": [
     {
       "id": "deck-n5-basic",
@@ -8,7 +8,7 @@
       "description": "Bộ thẻ từ vựng thiết yếu cho người mới bắt đầu học tiếng Nhật",
       "color": "#ef4444",
       "icon": "🌸",
-      "createdAt": "2026-10-24T04:16:03.806Z"
+      "createdAt": "2026-10-25T08:53:26.193Z"
     },
     {
       "id": "deck-kanji-starter",
@@ -16,7 +16,7 @@
       "description": "Chữ Hán trực quan kèm ảnh minh họa và mẹo ghi nhớ sâu",
       "color": "#0284c7",
       "icon": "🗻",
-      "createdAt": "2026-10-24T04:16:03.806Z"
+      "createdAt": "2026-10-25T08:53:26.193Z"
     },
     {
       "id": "deck-culture-phrases",
@@ -24,7 +24,7 @@
       "description": "Những câu giao tiếp chứa đựng chiều sâu văn hóa xứ sở hoa anh đào",
       "color": "#10b981",
       "icon": "🍵",
-      "createdAt": "2026-10-24T04:16:03.806Z"
+      "createdAt": "2026-10-25T08:53:26.193Z"
     }
   ],
   "cards": [
@@ -37,7 +37,7 @@
       "meaning": "Trưởng phòng, Trưởng bộ phận",
       "jlpt": "N4",
       "category": "Từ vựng",
-      "description": "Chức vụ lãnh đạo quan trọng trong hệ thống cấp bậc công ty Nhật Bản (Japanese Corporate Hierarchy).\n\n• Cấu thành chữ Hán:\n- 部 (BỘ): Bộ phận, phòng ban, phân khu.\n- 長 (TRƯỞNG): Đứng đầu, trưởng bối, lớn tuổi, lãnh đạo.\n\n• Hệ thống cấp bậc công ty Nhật thường gặp:\n- 社長 (しゃちょう - Shachou): Giám đốc / Tổng giám đốc\n- 部長 (ぶちょう - Buchou): Trưởng phòng, Trưởng bộ phận\n- 課長 (かちょう - Kachou): Trưởng ban, Quản lý nhóm\n- 係長 (かかりちょう - Kakarichou): Tổ trưởng\n- 社員 (しゃいん - Shain): Nhân viên\n\n• Lưu ý văn hóa công sở: Khi nói chuyện trực tiếp với cấp trên, người Nhật gọi thẳng chức danh, ví dụ: 'Tanaka-buchou' (田中部長) chứ không dùng 'san'.",
+      "description": "Chức vụ lãnh đạo quan trọng trong hệ thống cấp bậc công ty Nhật Bản (Japanese Corporate Hierarchy).\n\n• Cấu thành chữ Hán:\n- 部 (BỘ): Bộ phận, phòng ban, phân khu.\n- 長 (TRƯỞNG): Đứng đầu, trưởng bối, lớn tuổi, lãnh đạo.\n\n• Hệ thống cấp bậc công ty Nhật thường gặp:\n- 社長 (しゃちょう - Shachou): Giám đốc / Tổng giám đốc\n- 部長 (ぶちょう - Buchou): Trưởng phòng, Trưởng bộ phận\n- 課長 (かちょう - Kachou): Trưởng ban, Quản lý nhóm\n- 係長 (かかりちょう - Kakarichou): Tổ trưởng\n- 社員 (しゃいん - Shain): Nhân viên\n\n• Lưu ý văn hóa công sở: Khi nói chuyện trực tiếp với cấp trên, người Nhật gọi thẳng chức danh, ví dụ: \"Tanaka-buchou\" (田中部長) chứ không dùng \"san\".",
       "imageUrl": "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=800&q=80",
       "videoUrl": "https://assets.mixkit.co/videos/preview/mixkit-business-people-meeting-in-a-boardroom-43403-large.mp4",
       "thumbnailUrl": "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=400&q=80",
@@ -57,8 +57,8 @@
       ],
       "status": "new",
       "reviewCount": 0,
-      "createdAt": "2026-10-24T04:20:00.000Z",
-      "updatedAt": "2026-10-24T04:20:00.000Z"
+      "createdAt": "2026-10-25T08:53:26.193Z",
+      "updatedAt": "2026-10-25T08:53:26.193Z"
     },
     {
       "id": "card-negau",
@@ -95,8 +95,8 @@
       ],
       "status": "new",
       "reviewCount": 0,
-      "createdAt": "2026-10-24T04:20:00.000Z",
-      "updatedAt": "2026-10-24T04:20:00.000Z"
+      "createdAt": "2026-10-25T08:53:26.193Z",
+      "updatedAt": "2026-10-25T08:53:26.193Z"
     },
     {
       "id": "card-genzai",
@@ -107,7 +107,7 @@
       "meaning": "Hiện tại, hiện nay, thời điểm này",
       "jlpt": "N3",
       "category": "Từ vựng",
-      "description": "Từ vựng chỉ mốc thời gian phổ biến trong văn bản, công việc, tin tức và truyền thông.\n\n• Cấu thành chữ Hán:\n- 現 (HIỆN): Xuất hiện, hiện hữu, trước mắt (bộ Ngọc 玉/王 và chữ Kiến 見).\n- 在 (TẠI): Tồn tại, ở tại, có mặt (bộ Thổ 土).\n\n• So sánh với '今' (Ima):\n- 今 (Ima): Dùng trong đàm thoại hàng ngày mang nghĩa 'bây giờ' (thời điểm ngay lúc nói).\n- 現在 (Genzai): Trang trọng hơn, dùng trong văn viết, báo cáo, thông số thống kê ('hiện nay', 'tính đến nay').\n\n• Cụm từ hay gặp:\n- 過去・現在・未来 (Kako - Genzai - Mirai): Quá khứ - Hiện tại - Tương lai\n- 現在の状況 (Genzai no joukyou): Tình hình hiện tại\n- 2026年現在 (Nisen nijuurokunen genzai): Tính đến thời điểm năm 2026",
+      "description": "Từ vựng chỉ mốc thời gian phổ biến trong văn bản, công việc, tin tức và truyền thông.\n\n• Cấu thành chữ Hán:\n- 現 (HIỆN): Xuất hiện, hiện hữu, trước mắt (bộ Ngọc 玉/王 và chữ Kiến 見).\n- 在 (TẠI): Tồn tại, ở tại, có mặt (bộ Thổ 土).\n\n• So sánh với \"今\" (Ima):\n- 今 (Ima): Dùng trong đàm thoại hàng ngày mang nghĩa \"bây giờ\" (thời điểm ngay lúc nói).\n- 現在 (Genzai): Trang trọng hơn, dùng trong văn viết, báo cáo, thông số thống kê (\"hiện nay\", \"tính đến nay\").\n\n• Cụm từ hay gặp:\n- 過去・現在・未来 (Kako - Genzai - Mirai): Quá khứ - Hiện tại - Tương lai\n- 現在の状況 (Genzai no joukyou): Tình hình hiện tại\n- 2026年現在 (Nisen nijuurokunen genzai): Tính đến thời điểm năm 2026",
       "imageUrl": "https://images.unsplash.com/photo-1508962914676-134849a727f0?auto=format&fit=crop&w=800&q=80",
       "videoUrl": "https://assets.mixkit.co/videos/preview/mixkit-timelapse-of-tokyo-crossing-at-night-42416-large.mp4",
       "thumbnailUrl": "https://images.unsplash.com/photo-1508962914676-134849a727f0?auto=format&fit=crop&w=400&q=80",
@@ -133,8 +133,8 @@
       ],
       "status": "new",
       "reviewCount": 0,
-      "createdAt": "2026-10-24T04:20:00.000Z",
-      "updatedAt": "2026-10-24T04:20:00.000Z"
+      "createdAt": "2026-10-25T08:53:26.193Z",
+      "updatedAt": "2026-10-25T08:53:26.193Z"
     },
     {
       "id": "card-kaihatsu",
@@ -171,8 +171,8 @@
       ],
       "status": "new",
       "reviewCount": 0,
-      "createdAt": "2026-10-24T04:20:00.000Z",
-      "updatedAt": "2026-10-24T04:20:00.000Z"
+      "createdAt": "2026-10-25T08:53:26.193Z",
+      "updatedAt": "2026-10-25T08:53:26.193Z"
     },
     {
       "id": "card-ureshii",
@@ -183,7 +183,7 @@
       "meaning": "Vui mừng, sung sướng, hạnh phúc",
       "jlpt": "N5",
       "category": "Từ vựng",
-      "description": "Tính từ đuôi い (I-adjective) diễn tả cảm xúc vui sướng, hân hoan khi đón nhận tin vui, quà tặng, lời khen hoặc ước muốn thành hiện thực.\n\n• Cấu thành chữ Hán:\n- 嬉 (HI): Vui sướng, hoan hỷ (bộ Nữ 女 kết hợp chữ Hỷ 喜 mang lại điềm lành hạnh phúc).\n\n• Biến đổi ngữ pháp tính từ đuôi い:\n- Khẳng định: 嬉しい (Vui)\n- Phủ định: 嬉しくない (Không vui)\n- Quá khứ: 嬉しかった (Đã rất vui)\n- Phủ định quá khứ: 嬉しくなかった (Đã không vui)\n\n• Phân biệt với '楽しい' (Tanoshii):\n- 楽しい (Tanoshii): Vui vẻ do hoạt động khách quan (như đi picnic vui, xem phim hài vui nhộn).\n- 嬉しい (Ureshii): Niềm vui xuất phát từ nội tâm chủ quan (khi đỗ kỳ thi, được ai đó quan tâm giúp đỡ).",
+      "description": "Tính từ đuôi い (I-adjective) diễn tả cảm xúc vui sướng, hân hoan khi đón nhận tin vui, quà tặng, lời khen hoặc ước muốn thành hiện thực.\n\n• Cấu thành chữ Hán:\n- 嬉 (HI): Vui sướng, hoan hỷ (bộ Nữ 女 kết hợp chữ Hỷ 喜 mang lại điềm lành hạnh phúc).\n\n• Biến đổi ngữ pháp tính từ đuôi い:\n- Khẳng định: 嬉しい (Vui)\n- Phủ định: 嬉しくない (Không vui)\n- Quá khứ: 嬉しかった (Đã rất vui)\n- Phủ định quá khứ: 嬉しくなかった (Đã không vui)\n\n• Phân biệt với \"楽しい\" (Tanoshii):\n- 楽しい (Tanoshii): Vui vẻ do hoạt động khách quan (như đi picnic vui, xem phim hài vui nhộn).\n- 嬉しい (Ureshii): Niềm vui xuất phát từ nội tâm chủ quan (khi đỗ kỳ thi, được ai đó quan tâm giúp đỡ).",
       "imageUrl": "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80",
       "videoUrl": "https://assets.mixkit.co/videos/preview/mixkit-young-woman-smiling-at-the-camera-in-a-park-42289-large.mp4",
       "thumbnailUrl": "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80",
@@ -209,8 +209,8 @@
       ],
       "status": "new",
       "reviewCount": 0,
-      "createdAt": "2026-10-24T04:20:00.000Z",
-      "updatedAt": "2026-10-24T04:20:00.000Z"
+      "createdAt": "2026-10-25T08:53:26.193Z",
+      "updatedAt": "2026-10-25T08:53:26.193Z"
     },
     {
       "id": "card-kaisha",
@@ -221,7 +221,7 @@
       "meaning": "Công ty, doanh nghiệp",
       "jlpt": "N5",
       "category": "Từ vựng",
-      "description": "Từ vựng thiết yếu trong giao tiếp đời sống và công việc hàng ngày.\n\n• Chữ Hán cấu thành:\n- 会 (HỘI): Gặp gỡ, tụ họp, hội ngộ (bộ Nhân 人 kết hợp chữ Vân 云).\n- 社 (XÃ): Thần đất, đền thờ làng, đoàn thể, xã hội (bộ Thị 礻 và chữ Thổ 土).\n\n• Mẹo ghi nhớ & Điểm thú vị:\n- Ghép 'Hội' + 'Xã' = nơi mọi người tụ họp làm việc chung, tức là Công ty (会社).\n- Khi đảo ngược lại thành 社会 (しゃかい - Shakai) thì lại có nghĩa là Xã hội!\n\n• Các cụm từ thông dụng:\n- 会社員 (かいしゃいん - Kaishain): Nhân viên công ty\n- 会社に行く (かいしゃにいく - Kaisha ni iku): Đi làm / Đến công ty\n- 株式会社 (かぶしきがいしゃ - Kabushiki gaisha): Công ty cổ phần\n- 親会社 (おやがいしゃ - Oyagaisha): Công ty mẹ\n- 子会社 (こがいしゃ - Kogaisha): Công ty con",
+      "description": "Từ vựng thiết yếu trong giao tiếp đời sống và công việc hàng ngày.\n\n• Chữ Hán cấu thành:\n- 会 (HỘI): Gặp gỡ, tụ họp, hội ngộ (bộ Nhân 人 kết hợp chữ Vân 云).\n- 社 (XÃ): Thần đất, đền thờ làng, đoàn thể, xã hội (bộ Thị 礻 và chữ Thổ 土).\n\n• Mẹo ghi nhớ & Điểm thú vị:\n- Ghép \"Hội\" + \"Xã\" = nơi mọi người tụ họp làm việc chung, tức là Công ty (会社).\n- Khi đảo ngược lại thành 社会 (しゃかい - Shakai) thì lại có nghĩa là Xã hội!\n\n• Các cụm từ thông dụng:\n- 会社員 (かいしゃいん - Kaishain): Nhân viên công ty\n- 会社に行く (かいしゃにいく - Kaisha ni iku): Đi làm / Đến công ty\n- 株式会社 (かぶしきがいしゃ - Kabushiki gaisha): Công ty cổ phần\n- 親会社 (おやがいしゃ - Oyagaisha): Công ty mẹ\n- 子会社 (こがいしゃ - Kogaisha): Công ty con",
       "imageUrl": "/assets/kaisha-office.svg",
       "videoUrl": "https://assets.mixkit.co/videos/preview/mixkit-modern-city-skyscrapers-and-traffic-time-lapse-40544-large.mp4",
       "thumbnailUrl": "/assets/kaisha-office.svg",
@@ -247,8 +247,8 @@
       ],
       "status": "new",
       "reviewCount": 0,
-      "createdAt": "2026-10-24T03:40:00.000Z",
-      "updatedAt": "2026-10-24T03:40:00.000Z"
+      "createdAt": "2026-10-25T08:53:26.193Z",
+      "updatedAt": "2026-10-25T08:53:26.193Z"
     },
     {
       "id": "card-sakura",
@@ -279,9 +279,9 @@
       ],
       "status": "mastered",
       "reviewCount": 5,
-      "lastReviewedAt": "2026-10-24T04:16:03.806Z",
-      "createdAt": "2026-10-24T04:16:03.806Z",
-      "updatedAt": "2026-10-24T04:16:03.806Z"
+      "lastReviewedAt": "2026-10-25T08:53:26.193Z",
+      "createdAt": "2026-10-25T08:53:26.193Z",
+      "updatedAt": "2026-10-25T08:53:26.193Z"
     },
     {
       "id": "card-taberu",
@@ -312,9 +312,9 @@
       ],
       "status": "learning",
       "reviewCount": 2,
-      "lastReviewedAt": "2026-10-24T04:16:03.806Z",
-      "createdAt": "2026-10-24T04:16:03.806Z",
-      "updatedAt": "2026-10-24T04:16:03.806Z"
+      "lastReviewedAt": "2026-10-25T08:53:26.193Z",
+      "createdAt": "2026-10-25T08:53:26.193Z",
+      "updatedAt": "2026-10-25T08:53:26.193Z"
     },
     {
       "id": "card-fujisan",
@@ -338,9 +338,9 @@
       ],
       "status": "learning",
       "reviewCount": 3,
-      "lastReviewedAt": "2026-10-24T04:16:03.806Z",
-      "createdAt": "2026-10-24T04:16:03.806Z",
-      "updatedAt": "2026-10-24T04:16:03.806Z"
+      "lastReviewedAt": "2026-10-25T08:53:26.193Z",
+      "createdAt": "2026-10-25T08:53:26.193Z",
+      "updatedAt": "2026-10-25T08:53:26.193Z"
     },
     {
       "id": "card-ichigo-ichie",
@@ -364,8 +364,8 @@
       ],
       "status": "learning",
       "reviewCount": 1,
-      "createdAt": "2026-10-24T04:16:03.806Z",
-      "updatedAt": "2026-10-24T04:16:03.806Z"
+      "createdAt": "2026-10-25T08:53:26.193Z",
+      "updatedAt": "2026-10-25T08:53:26.193Z"
     },
     {
       "id": "card-itadakimasu",
@@ -389,8 +389,8 @@
       ],
       "status": "mastered",
       "reviewCount": 4,
-      "createdAt": "2026-10-24T04:16:03.806Z",
-      "updatedAt": "2026-10-24T04:16:03.806Z"
+      "createdAt": "2026-10-25T08:53:26.193Z",
+      "updatedAt": "2026-10-25T08:53:26.193Z"
     },
     {
       "id": "card-neko",
@@ -414,8 +414,8 @@
       ],
       "status": "new",
       "reviewCount": 0,
-      "createdAt": "2026-10-24T04:16:03.806Z",
-      "updatedAt": "2026-10-24T04:16:03.806Z"
+      "createdAt": "2026-10-25T08:53:26.193Z",
+      "updatedAt": "2026-10-25T08:53:26.193Z"
     }
   ]
 }

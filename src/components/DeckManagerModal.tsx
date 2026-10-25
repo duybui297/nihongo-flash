@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { Deck, Flashcard } from '../types/flashcard';
-import { X, Plus, Trash2, FolderPlus, Edit2, Layers } from 'lucide-react';
+import type { Deck, Flashcard } from '../types/flashcard';
+import { DECK_COLOR_PRESETS, DECK_ICON_PRESETS, DEFAULT_DECK_COLOR, DEFAULT_DECK_ICON } from '../types/flashcard';
+import { X, Plus, Trash2, Edit2, Layers } from 'lucide-react';
 
 interface DeckManagerModalProps {
   isOpen: boolean;
   onClose: () => void;
   decks: Deck[];
   cards: Flashcard[];
-  onSaveDeck: (deck: Deck) => Promise<void>;
+  onSaveDeck: (deck: Deck) => Promise<Deck | void>;
   onDeleteDeck: (deckId: string) => Promise<void>;
 }
 
@@ -22,45 +23,34 @@ export const DeckManagerModal: React.FC<DeckManagerModalProps> = ({
   const [editingDeck, setEditingDeck] = useState<Deck | null>(null);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [color, setColor] = useState('#ef4444');
-  const [icon, setIcon] = useState('🌸');
+  const [color, setColor] = useState(DEFAULT_DECK_COLOR);
+  const [icon, setIcon] = useState(DEFAULT_DECK_ICON);
+  const [isSaving, setIsSaving] = useState(false);
 
   if (!isOpen) return null;
 
-  const colorPresets = [
-    '#ef4444', // Red
-    '#f97316', // Orange
-    '#f59e0b', // Amber
-    '#10b981', // Emerald
-    '#0284c7', // Sky
-    '#6366f1', // Indigo
-    '#8b5cf6', // Violet
-    '#ec4899', // Pink
-  ];
-
-  const iconPresets = ['🌸', '🗻', '🍵', '🍱', '⛩️', '🏮', '🏯', '🎌', '🐱', '📖', '🎯', '✨'];
-
   const handleStartCreate = () => {
+    // Empty id signals a new deck (Fixes B1)
     setEditingDeck({
-      id: `deck-${Date.now()}`,
+      id: '',
       name: '',
       description: '',
-      color: '#ef4444',
-      icon: '🌸',
-      createdAt: new Date().toISOString(),
+      color: DEFAULT_DECK_COLOR,
+      icon: DEFAULT_DECK_ICON,
+      createdAt: '',
     });
     setName('');
     setDescription('');
-    setColor('#ef4444');
-    setIcon('🌸');
+    setColor(DEFAULT_DECK_COLOR);
+    setIcon(DEFAULT_DECK_ICON);
   };
 
   const handleStartEdit = (deck: Deck) => {
     setEditingDeck(deck);
     setName(deck.name);
     setDescription(deck.description);
-    setColor(deck.color || '#ef4444');
-    setIcon(deck.icon || '🌸');
+    setColor(deck.color || DEFAULT_DECK_COLOR);
+    setIcon(deck.icon || DEFAULT_DECK_ICON);
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -68,7 +58,7 @@ export const DeckManagerModal: React.FC<DeckManagerModalProps> = ({
     if (!name.trim()) return;
 
     const deckToSave: Deck = {
-      id: editingDeck?.id || `deck-${Date.now()}`,
+      id: editingDeck?.id || '',
       name: name.trim(),
       description: description.trim(),
       color,
@@ -76,8 +66,13 @@ export const DeckManagerModal: React.FC<DeckManagerModalProps> = ({
       createdAt: editingDeck?.createdAt || new Date().toISOString(),
     };
 
-    await onSaveDeck(deckToSave);
-    setEditingDeck(null);
+    try {
+      setIsSaving(true);
+      await onSaveDeck(deckToSave);
+      setEditingDeck(null);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -144,7 +139,7 @@ export const DeckManagerModal: React.FC<DeckManagerModalProps> = ({
                         {decks.length > 1 && (
                           <button
                             onClick={() => {
-                              if (confirm(`Bạn có chắc muốn xoá bộ thẻ "${deck.name}"?`)) {
+                              if (confirm(`Bạn có chắc muốn xoá bộ thẻ "${deck.name}"? Các thẻ trong bộ sẽ được chuyển sang bộ thẻ khác.`)) {
                                 onDeleteDeck(deck.id);
                               }
                             }}
@@ -163,7 +158,7 @@ export const DeckManagerModal: React.FC<DeckManagerModalProps> = ({
           ) : (
             <form onSubmit={handleSave} className="space-y-4">
               <h4 className="text-xs font-bold text-stone-800 uppercase tracking-wider">
-                {editingDeck.name ? 'Chỉnh sửa bộ thẻ' : 'Tạo bộ thẻ mới'}
+                {editingDeck.id ? 'Chỉnh sửa bộ thẻ' : 'Tạo bộ thẻ mới'}
               </h4>
 
               <div>
@@ -175,7 +170,7 @@ export const DeckManagerModal: React.FC<DeckManagerModalProps> = ({
                   placeholder="VD: Kanji N3 Somatome, Minna no Nihongo..."
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full text-xs bg-white border border-stone-200 rounded-lg p-2.5 font-medium"
+                  className="w-full text-xs bg-white border border-stone-200 rounded-lg p-2.5 font-medium focus:ring-2 focus:ring-rose-500 focus:outline-none"
                   required
                 />
               </div>
@@ -189,7 +184,7 @@ export const DeckManagerModal: React.FC<DeckManagerModalProps> = ({
                   placeholder="VD: Các chữ Hán trọng tâm thi JLPT N3..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full text-xs bg-white border border-stone-200 rounded-lg p-2.5"
+                  className="w-full text-xs bg-white border border-stone-200 rounded-lg p-2.5 focus:ring-2 focus:ring-rose-500 focus:outline-none"
                 />
               </div>
 
@@ -199,7 +194,7 @@ export const DeckManagerModal: React.FC<DeckManagerModalProps> = ({
                   Biểu tượng Icon
                 </label>
                 <div className="flex flex-wrap gap-1.5">
-                  {iconPresets.map((ic) => (
+                  {DECK_ICON_PRESETS.map((ic) => (
                     <button
                       key={ic}
                       type="button"
@@ -220,7 +215,7 @@ export const DeckManagerModal: React.FC<DeckManagerModalProps> = ({
                   Màu chủ đề
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  {colorPresets.map((c) => (
+                  {DECK_COLOR_PRESETS.map((c) => (
                     <button
                       key={c}
                       type="button"
@@ -239,14 +234,16 @@ export const DeckManagerModal: React.FC<DeckManagerModalProps> = ({
                   type="button"
                   onClick={() => setEditingDeck(null)}
                   className="px-3 py-1.5 text-xs text-stone-600 hover:bg-stone-100 rounded-lg"
+                  disabled={isSaving}
                 >
                   Hủy
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-lg shadow-sm"
+                  disabled={isSaving}
+                  className="px-4 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-lg shadow-sm disabled:opacity-50"
                 >
-                  Lưu bộ thẻ
+                  {isSaving ? 'Đang lưu...' : 'Lưu bộ thẻ'}
                 </button>
               </div>
             </form>

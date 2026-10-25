@@ -1,27 +1,27 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { 
-  X, 
-  Upload, 
-  Image as ImageIcon, 
-  Video as VideoIcon, 
-  Volume2, 
-  Plus, 
-  Trash2, 
-  Sparkles, 
-  Camera, 
-  ExternalLink,
-  HelpCircle,
-  FileText
+import {
+  X,
+  Upload,
+  Image as ImageIcon,
+  Video as VideoIcon,
+  Volume2,
+  Plus,
+  Trash2,
+  Sparkles,
+  Camera,
+  FileText,
 } from 'lucide-react';
-import { Flashcard, Deck, JLPTLevel, CardCategory, ExampleSentence } from '../types/flashcard';
+import type { Flashcard, Deck, JLPTLevel, CardCategory, ExampleSentence } from '../types/flashcard';
+import { JLPT_LEVELS, CARD_CATEGORIES, UPLOAD_ACCEPT_IMAGE, UPLOAD_ACCEPT_VIDEO } from '../types/flashcard';
 import { readFileAsDataUrl, optimizeImageDataUrl, extractVideoThumbnail } from '../utils/media';
 import { speakJapanese } from '../services/speech';
 import { api } from '../services/api';
+import { createId } from '../../shared/utils';
 
 interface FlashcardModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (card: Flashcard) => Promise<void>;
+  onSave: (card: Flashcard) => Promise<Flashcard | void>;
   initialCard?: Flashcard | null;
   decks: Deck[];
   defaultDeckId?: string;
@@ -43,7 +43,7 @@ export const FlashcardModal: React.FC<FlashcardModalProps> = ({
   const [jlpt, setJlpt] = useState<JLPTLevel>('N5');
   const [category, setCategory] = useState<CardCategory>('Từ vựng');
   const [description, setDescription] = useState('');
-  
+
   // Media states
   const [imageUrl, setImageUrl] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
@@ -53,7 +53,7 @@ export const FlashcardModal: React.FC<FlashcardModalProps> = ({
   // URL inputs
   const [customImageUrl, setCustomImageUrl] = useState('');
   const [customVideoUrl, setCustomVideoUrl] = useState('');
-  
+
   // Example sentences
   const [examples, setExamples] = useState<ExampleSentence[]>([]);
 
@@ -104,7 +104,7 @@ export const FlashcardModal: React.FC<FlashcardModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Auto-generate title if empty
+  // Auto-fill title helper
   const handleAutoFillTitle = () => {
     if (japanese && reading && meaning) {
       setTitle(`${japanese} (${reading}) - ${meaning}`);
@@ -115,7 +115,7 @@ export const FlashcardModal: React.FC<FlashcardModalProps> = ({
     }
   };
 
-  // Image Upload handler with direct server persistence
+  // Image Upload handler
   const handleImageUpload = async (file: File) => {
     try {
       setIsProcessingMedia(true);
@@ -148,15 +148,15 @@ export const FlashcardModal: React.FC<FlashcardModalProps> = ({
     }
   };
 
-  // Video Upload handler with direct server persistence
+  // Video Upload handler
   const handleVideoUpload = async (file: File) => {
     try {
       setIsProcessingMedia(true);
       setErrorMessage('');
 
-      // Check file size (limit to ~45MB)
-      if (file.size > 45 * 1024 * 1024) {
-        setErrorMessage('Video quá lớn (>45MB). Bạn có thể nén video hoặc dán đường dẫn link video trực tuyến.');
+      // Check file size (limit to 50MB)
+      if (file.size > 50 * 1024 * 1024) {
+        setErrorMessage('Video quá lớn (>50MB). Bạn có thể nén video hoặc dán đường dẫn link video trực tuyến.');
         setIsProcessingMedia(false);
         return;
       }
@@ -167,7 +167,6 @@ export const FlashcardModal: React.FC<FlashcardModalProps> = ({
         setThumbnailUrl(thumb);
       }
 
-      // Try uploading video file directly to Express server
       try {
         const uploadResult = await api.uploadFile(file);
         setVideoUrl(uploadResult.url);
@@ -176,7 +175,6 @@ export const FlashcardModal: React.FC<FlashcardModalProps> = ({
         console.warn('Server direct video upload fallback to data URL:', serverErr);
       }
 
-      // Fallback to data URL
       const videoDataUrl = await readFileAsDataUrl(file);
       setVideoUrl(videoDataUrl);
     } catch (err) {
@@ -207,10 +205,10 @@ export const FlashcardModal: React.FC<FlashcardModalProps> = ({
 
   // Add example sentence
   const handleAddExample = () => {
-    setExamples([
-      ...examples,
+    setExamples((prev) => [
+      ...prev,
       {
-        id: `ex-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+        id: createId('ex'),
         japanese: '',
         reading: '',
         vietnamese: '',
@@ -219,13 +217,13 @@ export const FlashcardModal: React.FC<FlashcardModalProps> = ({
   };
 
   const handleUpdateExample = (id: string, field: keyof ExampleSentence, value: string) => {
-    setExamples(
-      examples.map((ex) => (ex.id === id ? { ...ex, [field]: value } : ex))
+    setExamples((prev) =>
+      prev.map((ex) => (ex.id === id ? { ...ex, [field]: value } : ex))
     );
   };
 
   const handleRemoveExample = (id: string) => {
-    setExamples(examples.filter((ex) => ex.id !== id));
+    setExamples((prev) => prev.filter((ex) => ex.id !== id));
   };
 
   // Submit
@@ -240,7 +238,7 @@ export const FlashcardModal: React.FC<FlashcardModalProps> = ({
     const finalThumbnail = thumbnailUrl || imageUrl || '';
 
     const newCard: Flashcard = {
-      id: initialCard?.id || `card-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+      id: initialCard?.id || createId('card'),
       deckId,
       title: finalTitle,
       japanese: japanese.trim() || finalTitle,
@@ -266,7 +264,7 @@ export const FlashcardModal: React.FC<FlashcardModalProps> = ({
       onClose();
     } catch (err) {
       console.error(err);
-      setErrorMessage('Không thể lưu thẻ. Vui lòng kiểm tra dung lượng.');
+      setErrorMessage('Không thể lưu thẻ lên máy chủ. Vui lòng thử lại.');
     } finally {
       setIsSaving(false);
     }
@@ -283,7 +281,7 @@ export const FlashcardModal: React.FC<FlashcardModalProps> = ({
               {initialCard ? 'Cập nhật Flashcard Tiếng Nhật' : 'Thêm Flashcard Tiếng Nhật Mới'}
             </h2>
             <p className="text-xs text-stone-500 mt-0.5">
-              Cập nhật nội dung học, up hình ảnh & video minh họa, khung mô tả chi tiết
+              Cập nhật nội dung học, tải hình ảnh & video minh họa, khung mô tả chi tiết
             </p>
           </div>
           <button
@@ -337,12 +335,11 @@ export const FlashcardModal: React.FC<FlashcardModalProps> = ({
                   onChange={(e) => setJlpt(e.target.value as JLPTLevel)}
                   className="w-full text-sm bg-stone-50 border border-stone-200 rounded-lg px-3 py-2 text-stone-800 focus:ring-2 focus:ring-rose-500 focus:bg-white"
                 >
-                  <option value="N5">N5 (Sơ cấp 1)</option>
-                  <option value="N4">N4 (Sơ cấp 2)</option>
-                  <option value="N3">N3 (Trung cấp)</option>
-                  <option value="N2">N2 (Thượng cấp)</option>
-                  <option value="N1">N1 (Cao cấp)</option>
-                  <option value="Khác">Khác</option>
+                  {JLPT_LEVELS.map((l) => (
+                    <option key={l.value} value={l.value}>
+                      {l.label}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -355,12 +352,11 @@ export const FlashcardModal: React.FC<FlashcardModalProps> = ({
                   onChange={(e) => setCategory(e.target.value as CardCategory)}
                   className="w-full text-sm bg-stone-50 border border-stone-200 rounded-lg px-3 py-2 text-stone-800 focus:ring-2 focus:ring-rose-500 focus:bg-white"
                 >
-                  <option value="Từ vựng">Từ vựng (Tango)</option>
-                  <option value="Kanji">Chữ Hán (Kanji)</option>
-                  <option value="Ngữ pháp">Ngữ pháp (Bunpou)</option>
-                  <option value="Giao tiếp">Giao tiếp (Kaiwa)</option>
-                  <option value="Thành ngữ">Thành ngữ / Quán dụng ngữ</option>
-                  <option value="Khác">Khác</option>
+                  {CARD_CATEGORIES.map((c) => (
+                    <option key={c.value} value={c.value}>
+                      {c.label}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -375,7 +371,7 @@ export const FlashcardModal: React.FC<FlashcardModalProps> = ({
                 <button
                   type="button"
                   onClick={handleAutoFillTitle}
-                  className="text-xs text-rose-600 hover:text-rose-700 font-medium flex items-center gap-1"
+                  className="text-xs text-rose-600 hover:text-rose-700 font-medium flex items-center gap-1 cursor-pointer"
                 >
                   <Sparkles className="w-3 h-3" />
                   Tự động điền theo từ vựng
@@ -402,7 +398,7 @@ export const FlashcardModal: React.FC<FlashcardModalProps> = ({
                     <button
                       type="button"
                       onClick={() => speakJapanese(japanese)}
-                      className="text-xs text-rose-600 hover:text-rose-700 flex items-center gap-0.5"
+                      className="text-xs text-rose-600 hover:text-rose-700 flex items-center gap-0.5 cursor-pointer"
                       title="Nghe phát âm tiếng Nhật"
                     >
                       <Volume2 className="w-3 h-3" />
@@ -428,7 +424,7 @@ export const FlashcardModal: React.FC<FlashcardModalProps> = ({
                     <button
                       type="button"
                       onClick={() => speakJapanese(reading)}
-                      className="text-xs text-rose-600 hover:text-rose-700 flex items-center gap-0.5"
+                      className="text-xs text-rose-600 hover:text-rose-700 flex items-center gap-0.5 cursor-pointer"
                       title="Nghe phát âm"
                     >
                       <Volume2 className="w-3 h-3" />
@@ -481,7 +477,7 @@ export const FlashcardModal: React.FC<FlashcardModalProps> = ({
             </div>
           </div>
 
-          {/* Section 2: Media Upload (Image & Video) - Explicit user requirement */}
+          {/* Section 2: Media Upload (Image & Video) */}
           <div className="space-y-4 pt-3 border-t border-stone-200">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-stone-800 uppercase tracking-wider flex items-center gap-1.5">
@@ -526,11 +522,11 @@ export const FlashcardModal: React.FC<FlashcardModalProps> = ({
                   <span className="text-xs font-bold text-stone-700 block">
                     Tải lên hình ảnh từ thiết bị
                   </span>
-                  
+
                   <input
                     type="file"
                     ref={imageFileInputRef}
-                    accept="image/*"
+                    accept={UPLOAD_ACCEPT_IMAGE}
                     className="hidden"
                     onChange={(e) => {
                       const file = e.target.files?.[0];
@@ -538,7 +534,7 @@ export const FlashcardModal: React.FC<FlashcardModalProps> = ({
                     }}
                   />
 
-                  <div 
+                  <div
                     onClick={() => imageFileInputRef.current?.click()}
                     className="border-2 border-dashed border-stone-300 hover:border-rose-400 bg-white hover:bg-rose-50/20 p-5 rounded-xl text-center cursor-pointer transition-colors flex flex-col items-center justify-center gap-2"
                   >
@@ -546,7 +542,7 @@ export const FlashcardModal: React.FC<FlashcardModalProps> = ({
                     <div className="text-xs text-stone-600">
                       <span className="font-semibold text-rose-600">Nhấn để tải ảnh lên</span> hoặc kéo thả vào đây
                     </div>
-                    <span className="text-[10px] text-stone-400">PNG, JPG, WebP, GIF (tự động tối ưu hoá)</span>
+                    <span className="text-[10px] text-stone-400">PNG, JPG, WebP, GIF (tối đa 50MB)</span>
                   </div>
 
                   {/* Or image URL */}
@@ -632,7 +628,7 @@ export const FlashcardModal: React.FC<FlashcardModalProps> = ({
                   <input
                     type="file"
                     ref={videoFileInputRef}
-                    accept="video/mp4,video/webm,video/ogg,video/quicktime"
+                    accept={UPLOAD_ACCEPT_VIDEO}
                     className="hidden"
                     onChange={(e) => {
                       const file = e.target.files?.[0];
@@ -640,7 +636,7 @@ export const FlashcardModal: React.FC<FlashcardModalProps> = ({
                     }}
                   />
 
-                  <div 
+                  <div
                     onClick={() => videoFileInputRef.current?.click()}
                     className="border-2 border-dashed border-stone-300 hover:border-indigo-400 bg-white hover:bg-indigo-50/20 p-5 rounded-xl text-center cursor-pointer transition-colors flex flex-col items-center justify-center gap-2"
                   >
@@ -648,7 +644,7 @@ export const FlashcardModal: React.FC<FlashcardModalProps> = ({
                     <div className="text-xs text-stone-600">
                       <span className="font-semibold text-indigo-600">Nhấn để tải video lên</span> hoặc kéo thả
                     </div>
-                    <span className="text-[10px] text-stone-400">MP4, WebM (đề xuất &lt; 30MB)</span>
+                    <span className="text-[10px] text-stone-400">MP4, WebM (tối đa 50MB)</span>
                   </div>
 
                   {/* Video URL input */}
@@ -723,7 +719,7 @@ export const FlashcardModal: React.FC<FlashcardModalProps> = ({
               </div>
             )}
 
-            {/* THUMBNAIL DISPLAY SETTING - Core to user's "Danh sách thì chữ title và thumbnail" */}
+            {/* THUMBNAIL DISPLAY SETTING */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-amber-50/70 border border-amber-200/80 p-3 rounded-xl">
               <div className="flex items-center gap-3">
                 <div className="w-14 h-14 rounded-lg border border-amber-300 overflow-hidden bg-stone-900 shrink-0 flex items-center justify-center">
@@ -739,7 +735,7 @@ export const FlashcardModal: React.FC<FlashcardModalProps> = ({
                     Thumbnail hiển thị ngoài danh sách
                   </h4>
                   <p className="text-[11px] text-amber-800">
-                    {thumbnailUrl 
+                    {thumbnailUrl
                       ? 'Hình ảnh đại diện sẽ xuất hiện kèm Tiêu đề trong Danh sách thẻ.'
                       : 'Mẹo: Nhấn nút "Làm Thumbnail" từ ảnh hoặc "Trích Thumbnail" từ video.'}
                   </p>
@@ -750,7 +746,7 @@ export const FlashcardModal: React.FC<FlashcardModalProps> = ({
                 <input
                   type="file"
                   ref={thumbnailFileInputRef}
-                  accept="image/*"
+                  accept={UPLOAD_ACCEPT_IMAGE}
                   className="hidden"
                   onChange={async (e) => {
                     const file = e.target.files?.[0];

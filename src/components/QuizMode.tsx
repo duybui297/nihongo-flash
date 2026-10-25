@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { Flashcard } from '../types/flashcard';
-import { 
-  HelpCircle, 
-  Volume2, 
-  CheckCircle, 
-  XCircle, 
-  RotateCw, 
-  Sparkles, 
+import React, { useState, useEffect, useCallback } from 'react';
+import type { Flashcard } from '../types/flashcard';
+import {
+  HelpCircle,
+  Volume2,
+  CheckCircle,
+  XCircle,
+  RotateCw,
   ArrowRight,
   Trophy,
-  Flame
+  Flame,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { speakJapanese } from '../services/speech';
+import { shuffleArray } from '../utils/shuffle';
 
 interface QuizModeProps {
   cards: Flashcard[];
@@ -36,12 +36,12 @@ export const QuizMode: React.FC<QuizModeProps> = ({ cards, onExit }) => {
   const [streak, setStreak] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
 
-  // Generate quiz questions
-  const generateQuestions = () => {
+  // Generate quiz questions (Fixes B8: Fisher-Yates shuffle + deduplication of options)
+  const generateQuestions = useCallback(() => {
     if (cards.length < 2) return;
 
     const generated: Question[] = [];
-    const pool = [...cards].sort(() => Math.random() - 0.5);
+    const pool = shuffleArray(cards);
     const questionCount = Math.min(pool.length, 10);
 
     for (let i = 0; i < questionCount; i++) {
@@ -49,7 +49,7 @@ export const QuizMode: React.FC<QuizModeProps> = ({ cards, onExit }) => {
       const types: ('kanji_to_meaning' | 'meaning_to_kanji' | 'listening')[] = [
         'kanji_to_meaning',
         'meaning_to_kanji',
-        'listening'
+        'listening',
       ];
       const selectedType = types[Math.floor(Math.random() * types.length)];
 
@@ -63,14 +63,14 @@ export const QuizMode: React.FC<QuizModeProps> = ({ cards, onExit }) => {
         subPrompt = target.reading ? `【${target.reading}】` : undefined;
         correctAnswer = target.meaning;
         wrongPool = cards
-          .filter((c) => c.id !== target.id && c.meaning)
+          .filter((c) => c.id !== target.id && c.meaning && c.meaning !== target.meaning)
           .map((c) => c.meaning);
       } else if (selectedType === 'meaning_to_kanji') {
         prompt = target.meaning;
         subPrompt = 'Từ tiếng Nhật tương ứng là gì?';
         correctAnswer = target.japanese;
         wrongPool = cards
-          .filter((c) => c.id !== target.id && c.japanese)
+          .filter((c) => c.id !== target.id && c.japanese && c.japanese !== target.japanese)
           .map((c) => c.japanese);
       } else {
         // Listening
@@ -79,12 +79,14 @@ export const QuizMode: React.FC<QuizModeProps> = ({ cards, onExit }) => {
         correctAnswer = `${target.japanese} (${target.meaning})`;
         wrongPool = cards
           .filter((c) => c.id !== target.id)
-          .map((c) => `${c.japanese} (${c.meaning})`);
+          .map((c) => `${c.japanese} (${c.meaning})`)
+          .filter((opt) => opt !== correctAnswer);
       }
 
-      // Shuffle wrong options
-      const shuffledWrongs = wrongPool.sort(() => Math.random() - 0.5).slice(0, 3);
-      const options = [correctAnswer, ...shuffledWrongs].sort(() => Math.random() - 0.5);
+      // Deduplicate wrong options and shuffle
+      const uniqueWrongs = Array.from(new Set(wrongPool));
+      const shuffledWrongs = shuffleArray(uniqueWrongs).slice(0, 3);
+      const options = shuffleArray([correctAnswer, ...shuffledWrongs]);
 
       generated.push({
         card: target,
@@ -102,11 +104,11 @@ export const QuizMode: React.FC<QuizModeProps> = ({ cards, onExit }) => {
     setScore(0);
     setStreak(0);
     setIsFinished(false);
-  };
+  }, [cards]);
 
   useEffect(() => {
     generateQuestions();
-  }, [cards]);
+  }, [generateQuestions]);
 
   const currentQ = questions[currentIndex];
 
@@ -148,13 +150,13 @@ export const QuizMode: React.FC<QuizModeProps> = ({ cards, onExit }) => {
 
   if (cards.length < 2) {
     return (
-      <div className="bg-white rounded-2xl border border-stone-200 p-12 text-center max-w-md mx-auto">
+      <div className="bg-white rounded-2xl border border-stone-200 p-12 text-center max-w-md mx-auto shadow-sm">
         <HelpCircle className="w-12 h-12 text-stone-300 mx-auto mb-3" />
         <h3 className="text-base font-bold text-stone-900 mb-1">Cần ít nhất 2 thẻ để chơi Trắc nghiệm</h3>
         <p className="text-xs text-stone-500 mb-4">Vui lòng tạo thêm thẻ để hệ thống có thể tạo các câu hỏi trắc nghiệm.</p>
         <button
           onClick={onExit}
-          className="px-4 py-2 bg-stone-900 text-white text-xs font-semibold rounded-lg"
+          className="px-4 py-2 bg-stone-900 text-white text-xs font-semibold rounded-lg hover:bg-stone-800 transition-colors"
         >
           Quay lại danh sách thẻ
         </button>
@@ -278,7 +280,7 @@ export const QuizMode: React.FC<QuizModeProps> = ({ cards, onExit }) => {
           )}
         </div>
 
-        {/* Thumbnail Preview Hint (if user uploaded) */}
+        {/* Thumbnail Preview Hint (if available) */}
         {currentQ.card.thumbnailUrl && (
           <div className="w-24 h-16 rounded-xl overflow-hidden bg-stone-900 mx-auto border border-stone-200 opacity-90">
             <img
