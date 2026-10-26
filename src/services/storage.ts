@@ -6,8 +6,10 @@ const defaultSeed = createSeedData();
 export const INITIAL_DECKS: Deck[] = defaultSeed.decks;
 export const INITIAL_CARDS: Flashcard[] = defaultSeed.cards;
 
-const STORAGE_KEY_CARDS = 'nihongo_flashcards_v2';
-const STORAGE_KEY_DECKS = 'nihongo_decks_v2';
+const STORAGE_KEY_CARDS = 'nihongo_flashcards_v3';
+const STORAGE_KEY_DECKS = 'nihongo_decks_v3';
+const LEGACY_KEY_CARDS = 'nihongo_flashcards_v2';
+const LEGACY_KEY_DECKS = 'nihongo_decks_v2';
 
 function cleanLegacySeedVideos(cards: Flashcard[]): Flashcard[] {
   let changed = false;
@@ -26,15 +28,58 @@ function cleanLegacySeedVideos(cards: Flashcard[]): Flashcard[] {
   return cleaned;
 }
 
+/** Automatically merges any missing default seed items into the local collection */
+function syncItemsWithSeed<T extends { id: string }>(
+  currentItems: T[],
+  seedItems: T[],
+  saveFn: (items: T[]) => void
+): T[] {
+  const existingIds = new Set(currentItems.map((item) => item.id));
+  const missingItems = seedItems.filter((item) => !existingIds.has(item.id));
+  if (missingItems.length > 0) {
+    const merged = [...currentItems, ...missingItems];
+    saveFn(merged);
+    return merged;
+  }
+  return currentItems;
+}
+
 function getLocalCards(): Flashcard[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY_CARDS);
-    if (!raw) return INITIAL_CARDS;
-    const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed) && parsed.length > 0) {
-      return cleanLegacySeedVideos(parsed);
+    let raw = localStorage.getItem(STORAGE_KEY_CARDS);
+    let cards: Flashcard[] | null = null;
+
+    if (!raw) {
+      // Check for legacy v2 data to migrate
+      const legacyRaw = localStorage.getItem(LEGACY_KEY_CARDS);
+      if (legacyRaw) {
+        try {
+          const parsed = JSON.parse(legacyRaw);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            cards = cleanLegacySeedVideos(parsed);
+          }
+        } catch {
+          cards = null;
+        }
+      }
+    } else {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          cards = cleanLegacySeedVideos(parsed);
+        }
+      } catch {
+        cards = null;
+      }
     }
-    return INITIAL_CARDS;
+
+    if (!cards || cards.length === 0) {
+      setLocalCards(INITIAL_CARDS);
+      return INITIAL_CARDS;
+    }
+
+    // Always merge in any newly added seed cards (e.g. 90 JLPT N5 Kanji cards)
+    return syncItemsWithSeed(cards, INITIAL_CARDS, setLocalCards);
   } catch {
     return INITIAL_CARDS;
   }
@@ -50,10 +95,40 @@ function setLocalCards(cards: Flashcard[]) {
 
 function getLocalDecks(): Deck[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY_DECKS);
-    if (!raw) return INITIAL_DECKS;
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : INITIAL_DECKS;
+    let raw = localStorage.getItem(STORAGE_KEY_DECKS);
+    let decks: Deck[] | null = null;
+
+    if (!raw) {
+      // Check for legacy v2 data to migrate
+      const legacyRaw = localStorage.getItem(LEGACY_KEY_DECKS);
+      if (legacyRaw) {
+        try {
+          const parsed = JSON.parse(legacyRaw);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            decks = parsed;
+          }
+        } catch {
+          decks = null;
+        }
+      }
+    } else {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          decks = parsed;
+        }
+      } catch {
+        decks = null;
+      }
+    }
+
+    if (!decks || decks.length === 0) {
+      setLocalDecks(INITIAL_DECKS);
+      return INITIAL_DECKS;
+    }
+
+    // Always merge in any newly added seed decks (e.g. deck-kanji-n5-jlpt)
+    return syncItemsWithSeed(decks, INITIAL_DECKS, setLocalDecks);
   } catch {
     return INITIAL_DECKS;
   }
@@ -78,11 +153,13 @@ export async function initializeStorage(): Promise<{
   try {
     const data = await api.getInitialData();
     // Cache to localStorage for offline resilience
-    setLocalCards(data.cards);
-    setLocalDecks(data.decks);
+    const mergedCards = syncItemsWithSeed(data.cards, INITIAL_CARDS, () => {});
+    const mergedDecks = syncItemsWithSeed(data.decks, INITIAL_DECKS, () => {});
+    setLocalCards(mergedCards);
+    setLocalDecks(mergedDecks);
     return {
-      cards: data.cards,
-      decks: data.decks,
+      cards: mergedCards,
+      decks: mergedDecks,
       isServerConnected: true,
     };
   } catch (err) {
