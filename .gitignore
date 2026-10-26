@@ -8,4 +8,5 @@ coverage/
 !.env.example
 server.js
 data/
+!data/nihonflash.json
 uploads/
