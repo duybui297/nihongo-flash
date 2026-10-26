@@ -314,12 +314,16 @@ export const StudyMode: React.FC<StudyModeProps> = ({
 
           <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
             <button
-              onClick={() => speakJapanese(currentCard.japanese || currentCard.reading)}
-              className="px-3 py-1 bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 shadow-sm"
-              title="Phát âm chuẩn tiếng Nhật"
+              onClick={() => speakJapanese(currentCard.japanese || currentCard.reading, currentCard.audioUrl)}
+              className={`px-3 py-1 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 shadow-sm transition-all ${
+                currentCard.audioUrl
+                  ? 'bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800'
+                  : 'bg-rose-600 hover:bg-rose-700 active:bg-rose-800'
+              }`}
+              title={currentCard.audioUrl ? 'Nghe phát âm chuẩn AI Studio' : 'Phát âm chuẩn tiếng Nhật'}
             >
               <Volume2 className="w-3.5 h-3.5" />
-              <span>Phát âm</span>
+              <span>{currentCard.audioUrl ? 'AI Phát âm' : 'Phát âm'}</span>
             </button>
 
             <span className="text-[11px] text-stone-400 hidden sm:inline ml-2">
@@ -458,8 +462,8 @@ export const StudyMode: React.FC<StudyModeProps> = ({
                           {ex.japanese}
                         </span>
                         <button
-                          onClick={() => speakJapanese(ex.japanese)}
-                          className="text-stone-500 hover:text-rose-600 p-1"
+                          onClick={() => speakJapanese(ex.japanese, ex.audioUrl)}
+                          className="text-stone-500 hover:text-rose-600 p-1 cursor-pointer"
                         >
                           <Volume2 className="w-3.5 h-3.5" />
                         </button>

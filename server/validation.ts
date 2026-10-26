@@ -36,6 +36,7 @@ function parseExamples(value: unknown): ExampleSentence[] {
       japanese: asString(ex.japanese, 1000),
       reading: asString(ex.reading, 1000) || undefined,
       vietnamese: asString(ex.vietnamese, 1000),
+      audioUrl: asString(ex.audioUrl, 2000) || undefined,
     }))
     .filter((ex) => ex.japanese || ex.vietnamese);
 }
@@ -62,7 +63,7 @@ export function parseCardInput(body: Body, partial: boolean): Partial<FlashcardI
   }
   if (want('examples')) input.examples = parseExamples(body.examples);
   // Media fields are normalised later by persistCardMedia (URL validation + data URL → file).
-  for (const key of ['imageUrl', 'videoUrl', 'thumbnailUrl'] as const) {
+  for (const key of ['imageUrl', 'videoUrl', 'thumbnailUrl', 'audioUrl'] as const) {
     if (has(body, key)) input[key] = body[key] as string | undefined;
   }
 

@@ -9,6 +9,7 @@ import { flashcardsRouter } from './routes/flashcards';
 import { uploadRouter } from './routes/upload';
 import { backupRouter } from './routes/backup';
 import { storageRouter } from './routes/storage';
+import { ttsRouter } from './routes/tts';
 
 ensureStorageDirs();
 
@@ -61,6 +62,7 @@ apiRouter.use('/api/flashcards', flashcardsRouter);
 apiRouter.use('/api/upload', uploadRouter);
 apiRouter.use('/api/backup', backupRouter);
 apiRouter.use('/api/storage', storageRouter);
+apiRouter.use('/api/tts', ttsRouter);
 
 // Support both basePath (e.g. /products/nihongo-flash) and root mount
 if (config.basePath) {

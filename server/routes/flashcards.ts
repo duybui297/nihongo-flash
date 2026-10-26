@@ -66,6 +66,7 @@ flashcardsRouter.post('/', (req: Request, res: Response) => {
       imageUrl: mediaHandled.imageUrl,
       videoUrl: mediaHandled.videoUrl,
       thumbnailUrl: mediaHandled.thumbnailUrl || mediaHandled.imageUrl,
+      audioUrl: mediaHandled.audioUrl,
       examples: mediaHandled.examples ?? [],
       status: 'new',
       reviewCount: 0,

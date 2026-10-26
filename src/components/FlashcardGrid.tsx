@@ -565,13 +565,17 @@ export const FlashcardGrid: React.FC<FlashcardGridProps> = ({
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          speakJapanese(card.japanese || card.reading);
+                          speakJapanese(card.japanese || card.reading, card.audioUrl);
                         }}
-                        className="p-1 text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-md transition-colors flex items-center gap-1 text-xs font-medium cursor-pointer"
-                        title="Nghe phát âm chuẩn tiếng Nhật"
+                        className={`p-1 rounded-md transition-colors flex items-center gap-1 text-xs font-medium cursor-pointer ${
+                          card.audioUrl
+                            ? 'text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 font-semibold'
+                            : 'text-rose-600 hover:text-rose-700 hover:bg-rose-50'
+                        }`}
+                        title={card.audioUrl ? 'Nghe phát âm chuẩn Studio AI' : 'Nghe phát âm chuẩn tiếng Nhật'}
                       >
                         <Volume2 className="w-3.5 h-3.5" />
-                        <span className="text-[11px]">Phát âm</span>
+                        <span className="text-[11px]">{card.audioUrl ? 'AI Voice' : 'Phát âm'}</span>
                       </button>
                     </div>
 
@@ -713,9 +717,13 @@ export const FlashcardGrid: React.FC<FlashcardGridProps> = ({
                 {/* Right: Audio & Action buttons */}
                 <div className="flex items-center justify-end gap-1.5 shrink-0 self-end sm:self-center">
                   <button
-                    onClick={() => speakJapanese(card.japanese || card.reading)}
-                    className="p-2 text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                    title="Nghe phát âm chuẩn tiếng Nhật"
+                    onClick={() => speakJapanese(card.japanese || card.reading, card.audioUrl)}
+                    className={`p-2 rounded-lg transition-colors cursor-pointer ${
+                      card.audioUrl
+                        ? 'text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50'
+                        : 'text-rose-600 hover:text-rose-700 hover:bg-rose-50'
+                    }`}
+                    title={card.audioUrl ? 'Nghe phát âm chuẩn Studio AI' : 'Nghe phát âm chuẩn tiếng Nhật'}
                   >
                     <Volume2 className="w-4 h-4" />
                   </button>
@@ -822,11 +830,16 @@ export const FlashcardGrid: React.FC<FlashcardGridProps> = ({
                     </span>
                   )}
                   <button
-                    onClick={() => speakJapanese(previewCard.japanese || previewCard.reading)}
-                    className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold rounded-lg flex items-center gap-1 cursor-pointer"
+                    onClick={() => speakJapanese(previewCard.japanese || previewCard.reading, previewCard.audioUrl)}
+                    className={`px-2.5 py-1 text-xs font-semibold rounded-lg flex items-center gap-1 cursor-pointer transition-colors ${
+                      previewCard.audioUrl
+                        ? 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700'
+                        : 'bg-rose-50 hover:bg-rose-100 text-rose-700'
+                    }`}
+                    title={previewCard.audioUrl ? 'Giọng đọc Studio Neural AI' : 'Phát âm tiếng Nhật'}
                   >
                     <Volume2 className="w-3.5 h-3.5" />
-                    Nghe phát âm
+                    <span>{previewCard.audioUrl ? 'Nghe phát âm AI' : 'Nghe phát âm'}</span>
                   </button>
                 </div>
                 {previewCard.meaning && (
@@ -861,7 +874,7 @@ export const FlashcardGrid: React.FC<FlashcardGridProps> = ({
                           {ex.japanese}
                         </span>
                         <button
-                          onClick={() => speakJapanese(ex.japanese)}
+                          onClick={() => speakJapanese(ex.japanese, ex.audioUrl)}
                           className="text-stone-500 hover:text-rose-600 cursor-pointer"
                         >
                           <Volume2 className="w-3.5 h-3.5" />

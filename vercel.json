@@ -4,6 +4,10 @@
   "trailingSlash": false,
   "rewrites": [
     {
+      "source": "/products/nihongo-flash/api/:match*",
+      "destination": "/api/:match*"
+    },
+    {
       "source": "/products/nihongo-flash/assets/:match*",
       "destination": "/assets/:match*"
     },

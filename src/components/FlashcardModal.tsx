@@ -11,6 +11,11 @@ import {
   Camera,
   FileText,
   Loader2,
+  Mic,
+  Key,
+  Check,
+  ExternalLink,
+  Headphones,
 } from 'lucide-react';
 import type { Flashcard, Deck, JLPTLevel, CardCategory, ExampleSentence } from '../types/flashcard';
 import { JLPT_LEVELS, CARD_CATEGORIES, UPLOAD_ACCEPT_IMAGE, UPLOAD_ACCEPT_VIDEO } from '../types/flashcard';
@@ -18,6 +23,17 @@ import { readFileAsDataUrl, optimizeImageDataUrl, extractVideoThumbnail } from '
 import { speakJapanese } from '../services/speech';
 import { api } from '../services/api';
 import { createId } from '../../shared/utils';
+import {
+  generateFlashcardWithGemini,
+  getGeminiApiKey,
+  setGeminiApiKey,
+  clearGeminiApiKey,
+} from '../services/ai';
+import {
+  synthesizeAndUploadAudio,
+  JAPANESE_VOICES,
+  type JapaneseVoiceId,
+} from '../services/tts';
 
 interface FlashcardModalProps {
   isOpen: boolean;
@@ -49,11 +65,23 @@ export const FlashcardModal: React.FC<FlashcardModalProps> = ({
   const [imageUrl, setImageUrl] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
   const [thumbnailUrl, setThumbnailUrl] = useState('');
-  const [mediaTab, setMediaTab] = useState<'image' | 'video'>('image');
+  const [audioUrl, setAudioUrl] = useState('');
+  const [mediaTab, setMediaTab] = useState<'image' | 'video' | 'audio'>('image');
 
   // URL inputs
   const [customImageUrl, setCustomImageUrl] = useState('');
   const [customVideoUrl, setCustomVideoUrl] = useState('');
+  const [customAudioUrl, setCustomAudioUrl] = useState('');
+
+  // AI Assistant states
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [aiVoice, setAiVoice] = useState<JapaneseVoiceId>('ja-JP-NanamiNeural');
+  const [isAiGenerating, setIsAiGenerating] = useState(false);
+  const [isAudioGenerating, setIsAudioGenerating] = useState(false);
+  const [aiStatusMsg, setAiStatusMsg] = useState('');
+  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
+  const [apiKeyInput, setApiKeyInput] = useState(getGeminiApiKey());
+  const [hasApiKey, setHasApiKey] = useState(Boolean(getGeminiApiKey()));
 
   // Example sentences
   const [examples, setExamples] = useState<ExampleSentence[]>([]);
@@ -85,9 +113,11 @@ export const FlashcardModal: React.FC<FlashcardModalProps> = ({
       setImageUrl(initialCard.imageUrl || '');
       setVideoUrl(initialCard.videoUrl || '');
       setThumbnailUrl(initialCard.thumbnailUrl || '');
+      setAudioUrl(initialCard.audioUrl || '');
       setExamples(initialCard.examples || []);
       setCustomImageUrl(initialCard.imageUrl || '');
       setCustomVideoUrl(initialCard.videoUrl || '');
+      setCustomAudioUrl(initialCard.audioUrl || '');
     } else {
       // Defaults for new card
       setDeckId(defaultDeckId && defaultDeckId !== 'all' ? defaultDeckId : decks[0]?.id || 'deck-n5-basic');
@@ -101,10 +131,14 @@ export const FlashcardModal: React.FC<FlashcardModalProps> = ({
       setImageUrl('');
       setVideoUrl('');
       setThumbnailUrl('');
+      setAudioUrl('');
       setExamples([]);
       setCustomImageUrl('');
       setCustomVideoUrl('');
+      setCustomAudioUrl('');
+      setAiPrompt('');
     }
+    setAiStatusMsg('');
     setErrorMessage('');
   }, [initialCard, isOpen, defaultDeckId, decks]);
 
@@ -240,6 +274,93 @@ export const FlashcardModal: React.FC<FlashcardModalProps> = ({
     setExamples((prev) => prev.filter((ex) => ex.id !== id));
   };
 
+  // AI Auto-Fill & Voice Generation
+  const handleAiGenerate = async () => {
+    if (!aiPrompt.trim()) {
+      setErrorMessage('Vui lòng nhập từ vựng tiếng Nhật hoặc tiếng Việt cần AI tạo.');
+      return;
+    }
+
+    if (!hasApiKey && !getGeminiApiKey()) {
+      setShowApiKeyModal(true);
+      return;
+    }
+
+    try {
+      setIsAiGenerating(true);
+      setErrorMessage('');
+      setAiStatusMsg('Gemini đang phân tích Kanji, ngữ cảnh & sinh câu ví dụ...');
+
+      const result = await generateFlashcardWithGemini(aiPrompt.trim());
+
+      // Auto fill form fields
+      setTitle(result.title);
+      setJapanese(result.japanese);
+      setReading(result.reading);
+      setMeaning(result.meaning);
+      setJlpt(result.jlpt);
+      setCategory(result.category);
+      setDescription(result.description);
+      setExamples(result.examples);
+
+      // Auto synthesize audio with Microsoft Edge Neural
+      setAiStatusMsg(`Đang tạo giọng đọc AI (${aiVoice}) & lưu Cloudinary...`);
+      try {
+        const cloudAudio = await synthesizeAndUploadAudio(result.japanese, aiVoice, 'card_audio');
+        setAudioUrl(cloudAudio);
+        setCustomAudioUrl(cloudAudio);
+        // Play sample audio preview
+        speakJapanese(result.japanese, cloudAudio);
+      } catch (audioErr) {
+        console.warn('Auto audio synthesis warning:', audioErr);
+      }
+
+      setAiStatusMsg('✨ Đã điền xong toàn bộ Flashcard & Giọng đọc AI!');
+      setTimeout(() => setAiStatusMsg(''), 4000);
+    } catch (err: any) {
+      console.error(err);
+      setErrorMessage(err?.message || 'Không thể tạo thẻ bằng AI. Vui lòng thử lại.');
+    } finally {
+      setIsAiGenerating(false);
+    }
+  };
+
+  const handleGenerateAudioOnly = async () => {
+    const textToSpeak = japanese.trim() || title.trim();
+    if (!textToSpeak) {
+      setErrorMessage('Vui lòng nhập Từ gốc / Chữ Hán trước khi tạo giọng đọc');
+      return;
+    }
+
+    try {
+      setIsAudioGenerating(true);
+      setErrorMessage('');
+      const cloudAudio = await synthesizeAndUploadAudio(textToSpeak, aiVoice, 'card_audio');
+      setAudioUrl(cloudAudio);
+      setCustomAudioUrl(cloudAudio);
+      speakJapanese(textToSpeak, cloudAudio);
+    } catch (err: any) {
+      console.error(err);
+      setErrorMessage(err?.message || 'Không thể tạo âm thanh giọng đọc');
+    } finally {
+      setIsAudioGenerating(false);
+    }
+  };
+
+  const handleSaveApiKey = () => {
+    const trimmed = apiKeyInput.trim();
+    if (trimmed) {
+      setGeminiApiKey(trimmed);
+      setHasApiKey(true);
+      setShowApiKeyModal(false);
+      setErrorMessage('');
+    } else {
+      clearGeminiApiKey();
+      setHasApiKey(false);
+      setShowApiKeyModal(false);
+    }
+  };
+
   // Submit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -264,6 +385,7 @@ export const FlashcardModal: React.FC<FlashcardModalProps> = ({
       imageUrl: imageUrl.trim() || undefined,
       videoUrl: videoUrl.trim() || undefined,
       thumbnailUrl: finalThumbnail.trim() || undefined,
+      audioUrl: audioUrl.trim() || undefined,
       examples: examples.filter((ex) => ex.japanese.trim() || ex.vietnamese.trim()),
       status: initialCard?.status || 'new',
       reviewCount: initialCard?.reviewCount || 0,
@@ -313,6 +435,103 @@ export const FlashcardModal: React.FC<FlashcardModalProps> = ({
               {errorMessage}
             </div>
           )}
+
+          {/* AI Auto-Fill & Voice Generation Banner */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-rose-50/90 via-pink-50/70 to-indigo-50/80 border border-rose-200/90 shadow-xs space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-rose-500 to-indigo-600 text-white flex items-center justify-center shadow-xs shrink-0">
+                  <Sparkles className="w-4 h-4 animate-pulse" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-stone-900 flex items-center gap-1.5">
+                    Trợ lý AI Điền Thẻ & Sinh Giọng Đọc
+                    <span className="text-[10px] uppercase tracking-wider font-extrabold px-1.5 py-0.5 rounded-full bg-rose-600 text-white">
+                      Miễn phí
+                    </span>
+                  </h3>
+                  <p className="text-[11px] text-stone-500">
+                    Google Gemini + Microsoft Edge Neural Voice (Tự động tải lên Cloudinary)
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setApiKeyInput(getGeminiApiKey());
+                  setShowApiKeyModal(true);
+                }}
+                className={`text-xs font-semibold px-2.5 py-1 rounded-lg border transition-all flex items-center gap-1.5 cursor-pointer self-start sm:self-auto ${
+                  hasApiKey
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                    : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
+                }`}
+                title="Cài đặt khóa Google Gemini API miễn phí"
+              >
+                <Key className="w-3.5 h-3.5" />
+                <span>{hasApiKey ? 'Đã cài Gemini Key' : 'Cài Gemini Key (Free)'}</span>
+                {hasApiKey && <Check className="w-3 h-3 text-emerald-600" />}
+              </button>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                type="text"
+                placeholder="Nhập từ tiếng Nhật (桜, 食べる) hoặc tiếng Việt (hoa anh đào, cẩn thận)..."
+                value={aiPrompt}
+                onChange={(e) => setAiPrompt(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !isAiGenerating) {
+                    e.preventDefault();
+                    handleAiGenerate();
+                  }
+                }}
+                disabled={isAiGenerating}
+                className="flex-1 text-sm bg-white border border-rose-200 rounded-xl px-3.5 py-2.5 text-stone-800 placeholder-stone-400 focus:ring-2 focus:ring-rose-500 focus:outline-hidden font-medium"
+              />
+
+              <select
+                value={aiVoice}
+                onChange={(e) => setAiVoice(e.target.value as JapaneseVoiceId)}
+                disabled={isAiGenerating}
+                className="text-xs bg-white border border-rose-200 rounded-xl px-3 py-2 text-stone-700 focus:ring-2 focus:ring-rose-500 focus:outline-hidden font-medium"
+                title="Chọn giọng đọc AI"
+              >
+                {JAPANESE_VOICES.map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {v.label}
+                  </option>
+                ))}
+              </select>
+
+              <button
+                type="button"
+                onClick={handleAiGenerate}
+                disabled={isAiGenerating || !aiPrompt.trim()}
+                className="px-4 py-2.5 bg-gradient-to-r from-rose-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer whitespace-nowrap"
+              >
+                {isAiGenerating ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Đang xử lý...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4" />
+                    <span>✨ AI Sinh Thẻ & Giọng Đọc</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            {aiStatusMsg && (
+              <div className="text-xs font-medium text-indigo-700 bg-white/80 backdrop-blur-xs px-3 py-1.5 rounded-lg border border-indigo-100 flex items-center gap-2 animate-pulse">
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-indigo-600" />
+                <span>{aiStatusMsg}</span>
+              </div>
+            )}
+          </div>
 
           {/* Section 1: Basic Information */}
           <div className="space-y-4">
@@ -524,6 +743,19 @@ export const FlashcardModal: React.FC<FlashcardModalProps> = ({
                   <VideoIcon className="w-3.5 h-3.5 text-indigo-500" />
                   Video minh hoạ
                   {videoUrl && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMediaTab('audio')}
+                  className={`flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-md transition-colors ${
+                    mediaTab === 'audio'
+                      ? 'bg-white text-stone-900 shadow-xs'
+                      : 'text-stone-600 hover:text-stone-900'
+                  }`}
+                >
+                  <Headphones className="w-3.5 h-3.5 text-amber-500" />
+                  Giọng đọc AI
+                  {audioUrl && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>}
                 </button>
               </div>
             </div>
@@ -745,6 +977,138 @@ export const FlashcardModal: React.FC<FlashcardModalProps> = ({
               </div>
             )}
 
+            {/* AUDIO TAB CONTENT */}
+            {mediaTab === 'audio' && (
+              <div className="bg-stone-50 p-4 sm:p-5 rounded-xl border border-stone-200 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h4 className="text-xs font-bold text-stone-800 flex items-center gap-1.5">
+                      <Mic className="w-4 h-4 text-rose-500" />
+                      Giọng đọc phát âm AI chuẩn Studio (Microsoft Neural)
+                    </h4>
+                    <p className="text-[11px] text-stone-500 mt-0.5">
+                      Âm thanh MP3 được tạo tự động và lưu trữ vĩnh viễn trên Cloudinary của bạn.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={aiVoice}
+                      onChange={(e) => setAiVoice(e.target.value as JapaneseVoiceId)}
+                      disabled={isAudioGenerating}
+                      className="text-xs bg-white border border-stone-200 rounded-lg px-2.5 py-1.5 text-stone-700 font-medium"
+                    >
+                      {JAPANESE_VOICES.map((v) => (
+                        <option key={v.id} value={v.id}>
+                          {v.label}
+                        </option>
+                      ))}
+                    </select>
+
+                    <button
+                      type="button"
+                      onClick={handleGenerateAudioOnly}
+                      disabled={isAudioGenerating || (!japanese && !title)}
+                      className="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white text-xs font-bold rounded-lg shadow-xs flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap"
+                    >
+                      {isAudioGenerating ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          <span>Đang tạo...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Mic className="w-3.5 h-3.5" />
+                          <span>Tạo giọng đọc AI</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Audio Status & Preview */}
+                {audioUrl ? (
+                  <div className="p-3.5 bg-white rounded-xl border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                        <Volume2 className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-stone-800">
+                            Đã có file âm thanh giọng đọc AI
+                          </span>
+                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                            Cloudinary MP3
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-stone-500 max-w-md truncate mt-0.5">
+                          {audioUrl}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => speakJapanese(japanese || title, audioUrl)}
+                        className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold rounded-lg flex items-center gap-1.5 cursor-pointer transition-colors"
+                      >
+                        <Volume2 className="w-3.5 h-3.5" />
+                        <span>Nghe thử</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAudioUrl('');
+                          setCustomAudioUrl('');
+                        }}
+                        className="p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg cursor-pointer"
+                        title="Xóa âm thanh"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-4 bg-white rounded-xl border border-dashed border-stone-200 text-center text-xs text-stone-500 flex flex-col items-center justify-center gap-1">
+                    <span>Chưa có file âm thanh AI riêng cho thẻ này.</span>
+                    <span className="text-[11px] text-stone-400">
+                      (Khi chưa có file audio riêng, app vẫn tự động đọc bằng giọng trình duyệt có sẵn).
+                    </span>
+                  </div>
+                )}
+
+                {/* Custom Audio URL */}
+                <div>
+                  <label className="block text-xs font-medium text-stone-600 mb-1">
+                    Hoặc dán link file âm thanh trực tiếp (Audio URL):
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="url"
+                      placeholder="https://example.com/audio.mp3"
+                      value={customAudioUrl}
+                      onChange={(e) => setCustomAudioUrl(e.target.value)}
+                      className="flex-1 text-xs bg-white border border-stone-200 rounded-lg px-2.5 py-1.5"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (customAudioUrl.trim()) {
+                          setAudioUrl(customAudioUrl.trim());
+                        }
+                      }}
+                      className="px-3 py-1.5 bg-stone-200 hover:bg-stone-300 text-stone-800 text-xs font-semibold rounded-lg"
+                    >
+                      Áp dụng
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* THUMBNAIL DISPLAY SETTING */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-amber-50/70 border border-amber-200/80 p-3 rounded-xl">
               <div className="flex items-center gap-3">
@@ -903,6 +1267,93 @@ export const FlashcardModal: React.FC<FlashcardModalProps> = ({
           </div>
         </form>
       </div>
+
+      {/* GEMINI API KEY CONFIG MODAL */}
+      {showApiKeyModal && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-stone-950/70 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl shadow-2xl border border-stone-200 max-w-md w-full overflow-hidden p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center">
+                  <Key className="w-4 h-4" />
+                </div>
+                <h3 className="text-base font-bold text-stone-900">
+                  Cài đặt Google Gemini API Key
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowApiKeyModal(false)}
+                className="text-stone-400 hover:text-stone-700 p-1"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="text-xs text-stone-600 space-y-2 bg-stone-50 p-3.5 rounded-xl border border-stone-200 leading-relaxed">
+              <p className="font-semibold text-stone-800">
+                👉 Cách lấy API Key miễn phí 100% trong 30 giây:
+              </p>
+              <ol className="list-decimal list-inside space-y-1 text-stone-600">
+                <li>Truy cập vào <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" className="text-rose-600 font-semibold underline inline-flex items-center gap-0.5">Google AI Studio <ExternalLink className="w-3 h-3" /></a></li>
+                <li>Đăng nhập bằng tài khoản Gmail của bạn (không cần thẻ tín dụng).</li>
+                <li>Nhấn nút <strong className="text-stone-800">"Create API key"</strong> và sao chép mã khóa.</li>
+                <li>Dán mã khóa vào ô bên dưới và nhấn <strong className="text-stone-800">"Lưu khóa"</strong>.</li>
+              </ol>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="block text-xs font-semibold text-stone-700">
+                Google Gemini API Key (Bắt đầu bằng <code className="bg-stone-100 px-1 py-0.5 rounded text-[11px]">AIzaSy...</code>)
+              </label>
+              <input
+                type="password"
+                placeholder="Dán API Key của bạn tại đây..."
+                value={apiKeyInput}
+                onChange={(e) => setApiKeyInput(e.target.value)}
+                className="w-full text-xs bg-stone-50 border border-stone-200 rounded-lg px-3 py-2 text-stone-800 focus:ring-2 focus:ring-rose-500 font-mono"
+              />
+              <p className="text-[11px] text-stone-400">
+                Khóa được lưu bảo mật trong trình duyệt của bạn (localStorage) và chỉ gửi trực tiếp đến Google AI.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-between pt-2">
+              {hasApiKey ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    clearGeminiApiKey();
+                    setApiKeyInput('');
+                    setHasApiKey(false);
+                    setShowApiKeyModal(false);
+                  }}
+                  className="text-xs text-red-600 hover:text-red-700 font-semibold cursor-pointer"
+                >
+                  Xóa khóa hiện tại
+                </button>
+              ) : <div />}
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowApiKeyModal(false)}
+                  className="px-3 py-1.5 text-xs font-semibold text-stone-600 hover:bg-stone-100 rounded-lg"
+                >
+                  Đóng
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveApiKey}
+                  className="px-4 py-1.5 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-lg shadow-sm"
+                >
+                  Lưu khóa API
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

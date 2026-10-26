@@ -13,6 +13,7 @@ export interface ExampleSentence {
   japanese: string;
   reading?: string;
   vietnamese: string;
+  audioUrl?: string;             // Audio giọng đọc AI (Cloudinary MP3 URL)
 }
 
 export interface Flashcard {
@@ -28,6 +29,7 @@ export interface Flashcard {
   imageUrl?: string;             // Ảnh minh họa (URL)
   videoUrl?: string;             // Video minh họa (URL)
   thumbnailUrl?: string;         // Thumbnail đại diện ngoài danh sách
+  audioUrl?: string;             // Audio giọng đọc AI chất lượng cao (MP3 URL)
   examples: ExampleSentence[];   // Các câu ví dụ thực tế
   status: StudyStatus;           // Trạng thái học tập
   reviewCount: number;           // Số lần đã ôn
@@ -59,6 +61,7 @@ export type FlashcardInput = Pick<
   | 'imageUrl'
   | 'videoUrl'
   | 'thumbnailUrl'
+  | 'audioUrl'
   | 'examples'
 >;
 
