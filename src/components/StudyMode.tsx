@@ -16,6 +16,7 @@ import confetti from 'canvas-confetti';
 import { speakJapanese } from '../services/speech';
 import { shuffleArray } from '../utils/shuffle';
 import { resolveMediaUrl } from '../utils/media';
+import { GrammarAnalysisDrawer } from './GrammarAnalysisDrawer';
 
 interface StudyModeProps {
   cards: Flashcard[];
@@ -44,6 +45,21 @@ export const StudyMode: React.FC<StudyModeProps> = ({
   });
   const [isCompleted, setIsCompleted] = useState(false);
   const [isImageLoading, setIsImageLoading] = useState(false);
+  const [selectedExampleForGrammar, setSelectedExampleForGrammar] = useState<{
+    sentence: string;
+    reading?: string;
+    vietnamese?: string;
+  } | null>(null);
+  const [isGrammarDrawerOpen, setIsGrammarDrawerOpen] = useState(false);
+
+  const handleOpenGrammar = (ex: { japanese: string; reading?: string; vietnamese: string }) => {
+    setSelectedExampleForGrammar({
+      sentence: ex.japanese,
+      reading: ex.reading,
+      vietnamese: ex.vietnamese,
+    });
+    setIsGrammarDrawerOpen(true);
+  };
 
   const currentCard = studyCards[currentIndex];
 
@@ -457,16 +473,33 @@ export const StudyMode: React.FC<StudyModeProps> = ({
                 <div className="space-y-2">
                   {currentCard.examples.map((ex) => (
                     <div key={ex.id} className="p-3 bg-rose-50/50 rounded-xl border border-rose-100 text-xs space-y-1">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between gap-2">
                         <span className="font-bold text-stone-900 font-japanese">
                           {ex.japanese}
                         </span>
-                        <button
-                          onClick={() => speakJapanese(ex.japanese, ex.audioUrl)}
-                          className="text-stone-500 hover:text-rose-600 p-1 cursor-pointer"
-                        >
-                          <Volume2 className="w-3.5 h-3.5" />
-                        </button>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenGrammar(ex);
+                            }}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-gradient-to-r from-indigo-50 to-purple-50 hover:from-indigo-100 hover:to-purple-100 text-indigo-700 border border-indigo-200/80 shadow-2xs hover:shadow-xs transition-all cursor-pointer group/aiBtn"
+                            title="Bật trợ lý phân tích ngữ pháp AI cho câu ví dụ này"
+                          >
+                            <Sparkles className="w-3.5 h-3.5 text-indigo-600 group-hover/aiBtn:rotate-12 transition-transform" />
+                            <span>Ngữ pháp AI</span>
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              speakJapanese(ex.japanese, ex.audioUrl);
+                            }}
+                            className="text-stone-500 hover:text-rose-600 p-1 rounded-md hover:bg-rose-100/50 cursor-pointer transition-colors"
+                            title="Phát âm"
+                          >
+                            <Volume2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                       {ex.reading && <p className="text-stone-500 font-japanese">{ex.reading}</p>}
                       <p className="text-stone-700">{ex.vietnamese}</p>
@@ -543,6 +576,16 @@ export const StudyMode: React.FC<StudyModeProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Slide-over AI Grammar Analysis Drawer */}
+      <GrammarAnalysisDrawer
+        isOpen={isGrammarDrawerOpen}
+        onClose={() => setIsGrammarDrawerOpen(false)}
+        sentence={selectedExampleForGrammar?.sentence || ''}
+        reading={selectedExampleForGrammar?.reading}
+        vietnamese={selectedExampleForGrammar?.vietnamese}
+        cardTitle={currentCard?.title}
+      />
     </div>
   );
 };
